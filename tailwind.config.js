@@ -16,9 +16,10 @@ module.exports = {
         text: "#4A3728", // Warm brown text
       },
       fontFamily: {
-        sans: ['Cormorant Garamond', 'Playfair Display', 'serif'],
+        sans: ['Raleway', 'Poppins', 'sans-serif'],
         display: ['Playfair Display', 'serif'],
-        body: ['Cormorant Garamond', 'serif'],
+        body: ['Raleway', 'sans-serif'],
+        accent: ['Poppins', 'sans-serif'],
       },
       borderRadius: {
         'elegant': '0.75rem',
