@@ -21,14 +21,16 @@ const WalletContext = ({ children }) => {
     () => [
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
-      // Remove any other wallet adapters you don't need
     ],
     [network]
   );
 
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
+      <WalletProvider 
+        wallets={wallets} 
+        autoConnect={false}
+      >
         {children}
       </WalletProvider>
     </ConnectionProvider>
