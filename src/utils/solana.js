@@ -31,56 +31,6 @@ export async function findAssociatedTokenAddress(
     )[0];
 }
 
-// // Send USDC tokens
-// export async function sendUSDC({
-//     connection,
-//     fromWallet,
-//     toWallet,
-//     amount,
-// }) {
-//     try {
-//         const fromWalletPubkey = new PublicKey(fromWallet);
-//         const toWalletPubkey = new PublicKey(toWallet);
-
-//         // Get the source token account
-//         const fromTokenAccount = await findAssociatedTokenAddress(
-//             fromWalletPubkey,
-//             USDC_MINT
-//         );
-
-//         // Get the destination token account
-//         const toTokenAccount = await findAssociatedTokenAddress(
-//             toWalletPubkey,
-//             USDC_MINT
-//         );
-
-//         // Create transfer instruction
-//         const transferInstruction = Token.createTransferInstruction(
-//             TOKEN_PROGRAM_ID,
-//             fromTokenAccount,
-//             toTokenAccount,
-//             fromWalletPubkey,
-//             [],
-//             amount * (10 ** 6) // USDC has 6 decimals
-//         );
-
-//         // Get recent blockhash
-//         const { blockhash } = await connection.getLatestBlockhash();
-
-//         // Create transaction
-//         const transaction = new Transaction({
-//             recentBlockhash: blockhash,
-//             feePayer: fromWalletPubkey,
-//         }).add(transferInstruction);
-
-//         // Return the transaction for signing
-//         return transaction;
-//     } catch (error) {
-//         console.error('Error creating transaction:', error);
-//         throw error;
-//     }
-// }
-
 export async function sendUSDC({
     connection,
     fromWallet,

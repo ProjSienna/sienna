@@ -29,18 +29,6 @@ const PaymentForm = ({ payee, onSuccess, onCancel }) => {
     }
   };
 
-  const handleCancel = () => {
-    // Clear form state before closing
-    setAmount(payee?.amount?.toString() || '');
-    setMemo('');
-    setError('');
-    
-    // Call the onCancel callback if provided
-    if (typeof onCancel === 'function') {
-      onCancel();
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -159,7 +147,7 @@ const PaymentForm = ({ payee, onSuccess, onCancel }) => {
         <div className="flex justify-end space-x-3">
           <button
             type="button"
-            onClick={handleCancel}
+            onClick={onCancel}
             className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
             disabled={isProcessing}
           >
