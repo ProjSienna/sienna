@@ -11,7 +11,7 @@ import {
     TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 
-// USDC token mint address (devnet)
+// USDC token mint address (mainnet)
 export const USDC_MINT = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
 
 // USDC token account
