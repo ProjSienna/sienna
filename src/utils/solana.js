@@ -84,38 +84,56 @@ export async function findAssociatedTokenAddress(
 export async function sendUSDC({
     connection,
     fromWallet,
-    toPublicKey,
-    amount, // in USDC base units (so 6 decimals: 1 USDC = 1_000_000)
-  }) {
-    const USDC_MINT = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
-  
-    // Get ATA (Associated Token Address) for both sender and recipient
-    const fromTokenAccount = await getAssociatedTokenAddress(USDC_MINT, fromWallet.publicKey);
-    const toTokenAccount = await getAssociatedTokenAddress(USDC_MINT, toPublicKey);
-  
-    // Check if sender has enough USDC
-    const fromAccountInfo = await getAccount(connection, fromTokenAccount);
-    if (fromAccountInfo.amount < BigInt(amount)) {
-      throw new Error("Insufficient USDC balance");
+    toWallet,
+    amount,
+}) {
+    try {
+        // Convert string addresses to PublicKey objects if needed
+        const fromPubkey = typeof fromWallet === 'string' 
+            ? new PublicKey(fromWallet) 
+            : fromWallet;
+        
+        const toPubkey = typeof toWallet === 'string' 
+            ? new PublicKey(toWallet) 
+            : toWallet;
+
+        // Get the associated token accounts
+        const fromTokenAccount = await getAssociatedTokenAddress(
+            USDC_MINT,  // mint
+            fromPubkey  // owner
+        );
+
+        const toTokenAccount = await getAssociatedTokenAddress(
+            USDC_MINT,  // mint
+            toPubkey    // owner
+        );
+
+        // Create transfer instruction
+        const transferInstruction = createTransferInstruction(
+            fromTokenAccount,  // source
+            toTokenAccount,    // destination
+            fromPubkey,        // owner
+            BigInt(Math.round(amount * 1000000)),  // amount * 10^6 (USDC has 6 decimals)
+            [],                // multisig signers
+            TOKEN_PROGRAM_ID   // program ID
+        );
+
+        // Get recent blockhash
+        const { blockhash } = await connection.getLatestBlockhash();
+
+        // Create transaction
+        const transaction = new Transaction({
+            recentBlockhash: blockhash,
+            feePayer: fromPubkey,
+        }).add(transferInstruction);
+
+        // Return the transaction for signing
+        return transaction;
+    } catch (error) {
+        console.error('Error creating transaction:', error);
+        throw error;
     }
-  
-    // Build the transfer instruction
-    const transferIx = createTransferInstruction(
-      fromTokenAccount,
-      toTokenAccount,
-      fromWallet.publicKey,
-      BigInt(amount), // 6 decimals for USDC
-      [],
-      TOKEN_PROGRAM_ID
-    );
-  
-    // Send transaction
-    const tx = new Transaction().add(transferIx);
-    const signature = await sendAndConfirmTransaction(connection, tx, [fromWallet]);
-    console.log("✅ USDC Transfer complete:", signature);
-  
-    return signature;
-  }
+}
 
 // Format wallet address for display
 export function formatWalletAddress(address) {
