@@ -3,6 +3,7 @@ import {
     PublicKey,
     Transaction,
     sendAndConfirmTransaction,
+    Keypair,
 } from "@solana/web3.js";
 import {
     createTransferInstruction,
@@ -36,16 +37,17 @@ export async function sendUSDC({
     fromWallet,
     toWallet,
     amount,
+    isKeypair = false,  // Flag to indicate if fromWallet is a Keypair
 }) {
     try {
         // Convert string addresses to PublicKey objects if needed
         const fromPubkey = typeof fromWallet === 'string' 
             ? new PublicKey(fromWallet) 
-            : fromWallet;
+            : (fromWallet.publicKey || fromWallet);
         
         const toPubkey = typeof toWallet === 'string' 
             ? new PublicKey(toWallet) 
-            : toWallet;
+            : (toWallet.publicKey || toWallet);
 
         // Get the associated token accounts
         const fromTokenAccount = await getAssociatedTokenAddress(
@@ -69,18 +71,39 @@ export async function sendUSDC({
         );
 
         // Get recent blockhash
-        const { blockhash } = await connection.getLatestBlockhash();
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
 
         // Create transaction
         const transaction = new Transaction({
             recentBlockhash: blockhash,
             feePayer: fromPubkey,
+            lastValidBlockHeight,
         }).add(transferInstruction);
 
-        // Return the transaction for signing
+        // If we have a full keypair (with private key), we can send and confirm directly
+        if (isKeypair && fromWallet.secretKey) {
+            console.log("Using direct sendAndConfirmTransaction method...");
+            const signature = await sendAndConfirmTransaction(
+                connection, 
+                transaction, 
+                [fromWallet],  // fromWallet needs to be a Keypair
+                {
+                    commitment: 'confirmed',
+                    maxRetries: 5
+                }
+            );
+            console.log("✅ USDC transfer complete. Signature:", signature);
+            return {
+                success: true,
+                signature,
+                transaction: null  // No need to return the transaction since it's already sent
+            };
+        }
+
+        // Otherwise, just return the transaction for the wallet adapter to sign and send
         return transaction;
     } catch (error) {
-        console.error('Error creating transaction:', error);
+        console.error('Error sending USDC:', error);
         throw error;
     }
 }

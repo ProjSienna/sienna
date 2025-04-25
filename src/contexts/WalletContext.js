@@ -11,11 +11,12 @@ import { clusterApiUrl } from '@solana/web3.js';
 
 const WalletContext = ({ children }) => {
   // The network can be set to 'devnet', 'testnet', or 'mainnet-beta'
-  const network = WalletAdapterNetwork.Devnet;
+  const network = WalletAdapterNetwork.MainnetBeta;
 
-  // You can also provide a custom RPC endpoint
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-
+  // TODO: Move this RPC endpoint to a backend proxy for production
+  // Using direct RPC endpoint for now - to be replaced with backend proxy
+  const endpoint = "https://mainnet.helius-rpc.com/?api-key=e3e38817-187e-4a3b-b5cd-b40a0429c0c6";
+  
   // Only instantiate the wallets you want to use
   const wallets = useMemo(
     () => [

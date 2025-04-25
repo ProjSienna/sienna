@@ -29,6 +29,18 @@ const PaymentForm = ({ payee, onSuccess, onCancel }) => {
     }
   };
 
+  const handleCancel = () => {
+    // Clear form state before closing
+    setAmount(payee?.amount?.toString() || '');
+    setMemo('');
+    setError('');
+    
+    // Call the onCancel callback if provided
+    if (typeof onCancel === 'function') {
+      onCancel();
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -48,18 +60,35 @@ const PaymentForm = ({ payee, onSuccess, onCancel }) => {
       // Create transaction
       const tx = await sendUSDC({
         connection,
-        fromWallet: publicKey.toString(),
+        fromWallet: publicKey,
         toWallet: payee.walletAddress,
         amount: parseFloat(amount),
       });
 
       // Send transaction
-      const signature = await sendTransaction(tx, connection);
+      const signature = await sendTransaction(tx, connection, {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+        maxRetries: 5,
+      });
       console.log('Transaction sent with signature', signature);
       
-      // Wait for confirmation
-      await connection.confirmTransaction(signature, 'confirmed');
-      console.log('Transaction confirmed');
+      // Get blockhash for confirmation
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+      
+      // Wait for confirmation with proper parameters
+      const confirmation = await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight
+      }, 'confirmed');
+
+      // Check if transaction had any errors
+      if (confirmation.value.err) {
+        throw new Error(`Transaction failed to confirm: ${JSON.stringify(confirmation.value.err)}`);
+      }
+      
+      console.log('Transaction confirmed successfully');
 
       // Add to transaction history
       const newTransaction = addTransaction({
@@ -147,7 +176,7 @@ const PaymentForm = ({ payee, onSuccess, onCancel }) => {
         <div className="flex justify-end space-x-3">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleCancel}
             className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
             disabled={isProcessing}
           >
