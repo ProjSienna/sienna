@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { usePayees } from '../contexts/PayeesContext';
 import { useTransactions } from '../contexts/TransactionsContext';
-import { sendUSDC, formatWalletAddress } from '../utils/solana';
+import { sendUSDC, sendBatchUSDC, formatWalletAddress } from '../utils/solana';
 import { FaCheckCircle, FaTimesCircle, FaWallet, FaSpinner, FaCoins } from 'react-icons/fa';
 
 const PayrollPage = () => {
@@ -19,6 +19,8 @@ const PayrollPage = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [batchProgress, setBatchProgress] = useState(0);
+  const [totalBatches, setTotalBatches] = useState(0);
   
   useEffect(() => {
     // Calculate total amount whenever selected payees or custom amounts change
@@ -104,6 +106,107 @@ const PayrollPage = () => {
   };
 
   const processPayroll = async () => {
+    if (!validatePayroll() || !publicKey) return;
+    
+    setIsSubmitting(true);
+    const newProcessingStates = {};
+    const newCompletedPayments = {};
+    
+    // Initialize all payees to 'processing' state
+    for (const payeeId of selectedPayees) {
+      newProcessingStates[payeeId] = 'processing';
+    }
+    setProcessingStates(newProcessingStates);
+    
+    try {
+      // Prepare recipients array for batch processing
+      const recipients = selectedPayees.map(payeeId => {
+        const payee = payees.find(p => p.id === payeeId);
+        const amount = customAmounts[payeeId] !== undefined 
+          ? parseFloat(customAmounts[payeeId]) 
+          : payee.amount;
+          
+        return {
+          id: payeeId,
+          name: payee.name,
+          walletAddress: payee.walletAddress,
+          amount
+        };
+      });
+      
+      // Create batch transactions
+      const batchTransactions = await sendBatchUSDC({
+        connection,
+        fromWallet: publicKey.toString(),
+        recipients,
+        maxInstructions: 5 // Process 5 payments per transaction for optimal performance
+      });
+      
+      setTotalBatches(batchTransactions.length);
+      
+      // Process each batch transaction
+      for (let i = 0; i < batchTransactions.length; i++) {
+        setBatchProgress(i + 1);
+        
+        const transaction = batchTransactions[i];
+        const batchRecipients = transaction.recipients;
+        
+        try {
+          // Send and confirm the transaction
+          const signature = await sendTransaction(transaction, connection);
+          await connection.confirmTransaction(signature, 'confirmed');
+          
+          // Update the status for each recipient in this batch
+          for (const recipient of batchRecipients) {
+            // Add to transaction history
+            addTransaction({
+              amount: recipient.amount,
+              memo: `${payrollName}: Payment to ${recipient.name}`,
+              recipientName: recipient.name,
+              recipientWallet: recipient.walletAddress,
+              senderWallet: publicKey.toString(),
+              signature,
+              batchId: `${payrollName}_batch_${i + 1}`,
+            });
+            
+            // Update processing status
+            newProcessingStates[recipient.id] = 'completed';
+            newCompletedPayments[recipient.id] = true;
+          }
+          
+        } catch (err) {
+          console.error('Batch payment error:', err);
+          
+          // Mark all recipients in this failed batch as errors
+          for (const recipient of batchRecipients) {
+            newProcessingStates[recipient.id] = 'error';
+            setErrors(prev => ({
+              ...prev,
+              [recipient.id]: err.message || 'Failed to process payment'
+            }));
+          }
+        }
+        
+        // Update UI after each batch
+        setProcessingStates({...newProcessingStates});
+        setCompletedPayments({...newCompletedPayments});
+      }
+      
+    } catch (err) {
+      console.error('Payroll process error:', err);
+      setErrors(prev => ({
+        ...prev,
+        general: err.message || 'Failed to process payroll'
+      }));
+    } finally {
+      setIsSubmitting(false);
+      setBatchProgress(0);
+      setTotalBatches(0);
+    }
+  };
+
+  // Legacy individual processing method (fallback if needed)
+  const processPayrollIndividually = async () => {
     if (!validatePayroll() || !publicKey) return;
     
     setIsSubmitting(true);
@@ -237,6 +340,26 @@ const PayrollPage = () => {
                 )}
               </div>
               
+              {/* Batch Progress Indicator */}
+              {totalBatches > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">
+                      Processing transactions
+                    </span>
+                    <span className="text-sm font-medium text-gray-700">
+                      {batchProgress} of {totalBatches} batches
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div 
+                      className="bg-primary h-2.5 rounded-full" 
+                      style={{ width: `${(batchProgress / totalBatches) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+              
               {/* General Error */}
               {errors.general && (
                 <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
@@ -248,125 +371,120 @@ const PayrollPage = () => {
               <div className="mb-6 overflow-x-auto">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold text-gray-800">Select Payees</h2>
-                  <button
+                  
+                  <button 
                     onClick={selectAllPayees}
-                    className="text-primary hover:underline text-sm font-medium"
                     disabled={isSubmitting}
+                    className="text-sm text-primary hover:underline"
                   >
                     {selectedPayees.length === payees.length ? 'Deselect All' : 'Select All'}
                   </button>
                 </div>
                 
-                {payees.length === 0 ? (
-                  <div className="text-center py-8 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500">You haven't added any payees yet.</p>
-                  </div>
-                ) : (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Select
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Payee
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Wallet Address
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Amount (USDC)
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {payees.map(payee => (
-                        <tr key={payee.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <input
-                              type="checkbox"
-                              checked={selectedPayees.includes(payee.id)}
-                              onChange={() => togglePayee(payee.id)}
-                              disabled={isSubmitting}
-                              className="h-5 w-5 text-primary focus:ring-primary border-gray-300 rounded"
-                            />
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="font-medium text-gray-900">{payee.name}</div>
-                            {payee.description && (
-                              <div className="text-sm text-gray-500">{payee.description}</div>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap font-mono text-sm text-gray-500">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Select
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Wallet Address
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Amount (USDC)
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {payees.map((payee) => (
+                      <tr key={payee.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={selectedPayees.includes(payee.id)}
+                            onChange={() => togglePayee(payee.id)}
+                            disabled={isSubmitting}
+                            className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{payee.name}</div>
+                          {payee.note && (
+                            <div className="text-xs text-gray-500">{payee.note}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-500 font-mono">
                             {formatWalletAddress(payee.walletAddress)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <input
-                              type="text"
-                              value={customAmounts[payee.id] !== undefined ? customAmounts[payee.id] : (payee.amount || '')}
-                              onChange={(e) => handleCustomAmountChange(payee.id, e.target.value)}
-                              disabled={!selectedPayees.includes(payee.id) || isSubmitting}
-                              className={`w-28 p-2 border rounded ${
-                                errors[payee.id] ? 'border-red-500' : 'border-gray-300'
-                              }`}
-                              placeholder="0.00"
-                            />
-                            {errors[payee.id] && (
-                              <p className="text-red-500 text-xs mt-1">{errors[payee.id]}</p>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {processingStates[payee.id] === 'processing' && (
-                              <div className="flex items-center text-yellow-500">
-                                <FaSpinner className="animate-spin mr-2" />
-                                <span>Processing...</span>
-                              </div>
-                            )}
-                            {processingStates[payee.id] === 'completed' && (
-                              <div className="flex items-center text-accent">
-                                <FaCheckCircle className="mr-2" />
-                                <span>Completed</span>
-                              </div>
-                            )}
-                            {processingStates[payee.id] === 'error' && (
-                              <div className="flex items-center text-red-500">
-                                <FaTimesCircle className="mr-2" />
-                                <span>Failed</span>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="text"
+                            value={customAmounts[payee.id] !== undefined ? customAmounts[payee.id] : (payee.amount || '')}
+                            onChange={(e) => handleCustomAmountChange(payee.id, e.target.value)}
+                            disabled={!selectedPayees.includes(payee.id) || isSubmitting}
+                            className={`w-24 p-1 border rounded ${
+                              errors[payee.id] ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                          />
+                          {errors[payee.id] && (
+                            <p className="text-red-500 text-xs mt-1">{errors[payee.id]}</p>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {processingStates[payee.id] === 'processing' && (
+                            <span className="inline-flex items-center text-yellow-600">
+                              <FaSpinner className="animate-spin mr-1" />
+                              Processing
+                            </span>
+                          )}
+                          {processingStates[payee.id] === 'completed' && (
+                            <span className="inline-flex items-center text-green-600">
+                              <FaCheckCircle className="mr-1" />
+                              Completed
+                            </span>
+                          )}
+                          {processingStates[payee.id] === 'error' && (
+                            <span className="inline-flex items-center text-red-600">
+                              <FaTimesCircle className="mr-1" />
+                              Failed
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-gray-50">
+                      <td colSpan="3" className="px-6 py-3 text-right text-sm font-medium">
+                        Total Amount:
+                      </td>
+                      <td className="px-6 py-3 text-left text-sm font-bold">
+                        {totalAmount.toFixed(2)} USDC
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
               
-              {/* Summary and Submit */}
-              <div className="mt-8 flex flex-col md:flex-row justify-between items-start md:items-center">
-                <div className="mb-4 md:mb-0">
-                  <div className="text-gray-600">Total amount to be paid:</div>
-                  <div className="text-2xl font-bold flex items-center text-gray-800">
-                    <FaCoins className="text-secondary mr-2" />
-                    {totalAmount.toFixed(2)} USDC
-                  </div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    To {selectedPayees.length} {selectedPayees.length === 1 ? 'payee' : 'payees'}
-                  </div>
-                </div>
-                
+              <div className="flex justify-end">
                 <button
                   onClick={processPayroll}
-                  disabled={isSubmitting || selectedPayees.length === 0}
-                  className="px-6 py-3 bg-secondary text-dark font-medium rounded-lg flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isSubmitting}
+                  className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center"
                 >
                   {isSubmitting ? (
                     <>
                       <FaSpinner className="animate-spin mr-2" />
-                      Processing Payroll...
+                      Processing...
                     </>
                   ) : (
                     <>
