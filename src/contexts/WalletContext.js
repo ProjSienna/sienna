@@ -5,7 +5,7 @@ import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
-import { clusterApiUrl } from '@solana/web3.js';
+import { API_URL } from '../config';
 
 // No more UI imports needed
 

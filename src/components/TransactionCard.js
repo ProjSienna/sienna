@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaArrowUp, FaArrowDown, FaCheck, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaArrowUp, FaArrowDown, FaExternalLinkAlt } from 'react-icons/fa';
 import { formatWalletAddress } from '../utils/solana';
 import { useWallet } from '@solana/wallet-adapter-react';
 
@@ -7,10 +7,38 @@ const TransactionCard = ({ transaction }) => {
   const { publicKey } = useWallet();
   const isOutgoing = publicKey && transaction.senderWallet === publicKey.toString();
   
-  // Format date to local date and time
+  // Extract payroll name from memo if available
+  const getPayrollName = () => {
+    if (!transaction.memo) return null;
+    
+    // Memos usually have format "PayrollName: Payment to Recipient"
+    const colonIndex = transaction.memo.indexOf(':');
+    if (colonIndex > 0) {
+      return transaction.memo.substring(0, colonIndex).trim();
+    }
+    
+    // If memo doesn't have a colon, look for batch ID pattern
+    if (transaction.batchId && transaction.batchId.includes('_batch_')) {
+      const parts = transaction.batchId.split('_batch_')[0].split('_');
+      
+      // Check if the second-to-last part might be a timestamp (numeric and long)
+      const potentialTimestamp = parts[parts.length - 1];
+      if (potentialTimestamp && /^\d{13,}$/.test(potentialTimestamp)) {
+        // This looks like a timestamp, so exclude it from the payroll name
+        return parts.slice(0, -1).join('_').trim();
+      }
+      
+      return transaction.batchId.split('_batch_')[0].trim();
+    }
+    
+    return null;
+  };
+  
+  // Format date to local date and time - compact format
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString();
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' • ' + 
+           date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   // Get Solana Explorer URL for the transaction
@@ -18,67 +46,61 @@ const TransactionCard = ({ transaction }) => {
     return `https://solscan.io/tx/${signature}?cluster=devnet`;
   };
 
+  const payrollName = getPayrollName();
+
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center space-x-3">
-          <div className={`p-2 rounded-full ${isOutgoing ? 'bg-red-100' : 'bg-green-100'}`}>
-            {isOutgoing ? (
-              <FaArrowUp className="text-red-500" />
-            ) : (
-              <FaArrowDown className="text-green-500" />
-            )}
+    <div className="bg-white rounded-lg border border-gray-100 hover:shadow-sm transition-shadow p-3">
+      <div className="flex items-start gap-3">
+        {/* Left: Icon */}
+        <div className={`p-2 rounded-full flex-shrink-0 ${isOutgoing ? 'bg-red-100' : 'bg-green-100'}`}>
+          {isOutgoing ? (
+            <FaArrowUp className="text-red-500" />
+          ) : (
+            <FaArrowDown className="text-green-500" />
+          )}
+        </div>
+        
+        {/* Center: Transaction details */}
+        <div className="flex-1 min-w-0">
+          {/* Top Row: Recipient/Sender */}
+          <div className="flex justify-between items-start mb-1">
+            <div>
+              <div className="flex items-baseline">
+                <span className="text-gray-600 mr-1">{isOutgoing ? 'To:' : 'From:'}</span>
+                <span className="text-lg font-semibold text-gray-800">{transaction.recipientName || 'Unknown'}</span>
+              </div>
+              {payrollName && (
+                <p className="text-sm text-gray-500">
+                  Payroll: {payrollName}
+                </p>
+              )}
+            </div>
+            <div className={`font-semibold text-lg ${isOutgoing ? 'text-red-500' : 'text-green-500'}`}>
+              {isOutgoing ? '-' : '+'}{transaction.amount} USDC
+            </div>
           </div>
           
-          <div>
-            <h3 className="font-medium text-gray-800">
-              {isOutgoing ? `To: ${transaction.recipientName || 'Unknown'}` : `From: ${transaction.senderName || 'Unknown'}`}
-            </h3>
-            <p className="text-sm text-gray-500">
-              {transaction.memo || (isOutgoing ? 'Sent USDC' : 'Received USDC')}
-            </p>
-            <div className="flex items-center mt-1 text-xs text-gray-500 space-x-2">
-              <span>{formatDate(transaction.timestamp)}</span>
-              <span>•</span>
-              <div className="flex items-center space-x-1">
-                <FaCheck className="text-accent" />
-                <span>{transaction.status}</span>
-              </div>
+          {/* Bottom row: Address and Date */}
+          <div className="flex justify-between items-center text-sm mt-2">
+            <div className="text-gray-600">
+              <span className="bg-gray-100 px-2 py-0.5 rounded font-mono">
+                {formatWalletAddress(isOutgoing ? transaction.recipientWallet : transaction.senderWallet)}
+              </span>
+            </div>
+            <div className="flex items-center whitespace-nowrap">
+              <span className="text-gray-500 mr-2">{formatDate(transaction.timestamp)}</span>
+              <a 
+                href={getExplorerLink(transaction.signature)} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary flex items-center hover:underline"
+              >
+                View
+                <FaExternalLinkAlt className="ml-1" />
+              </a>
             </div>
           </div>
         </div>
-        
-        <div className="flex flex-col items-end">
-          <div className={`font-semibold ${isOutgoing ? 'text-red-500' : 'text-green-500'}`}>
-            {isOutgoing ? '-' : '+'}{transaction.amount} USDC
-          </div>
-          
-          <div className="text-xs mt-2">
-            <a 
-              href={getExplorerLink(transaction.signature)} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary flex items-center hover:underline"
-            >
-              <span>View</span>
-              <FaExternalLinkAlt className="ml-1 text-xs" />
-            </a>
-          </div>
-        </div>
-      </div>
-      
-      <div className="mt-3 pt-2 border-t border-gray-100 text-xs text-gray-500">
-        {isOutgoing ? (
-          <div className="flex justify-between">
-            <span>To:</span>
-            <span className="font-mono">{formatWalletAddress(transaction.recipientWallet)}</span>
-          </div>
-        ) : (
-          <div className="flex justify-between">
-            <span>From:</span>
-            <span className="font-mono">{formatWalletAddress(transaction.senderWallet)}</span>
-          </div>
-        )}
       </div>
     </div>
   );

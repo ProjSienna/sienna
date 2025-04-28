@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { usePayees } from '../contexts/PayeesContext';
 import { useTransactions } from '../contexts/TransactionsContext';
 import { sendUSDC, sendBatchUSDC, formatWalletAddress } from '../utils/solana';
-import { FaCheckCircle, FaTimesCircle, FaWallet, FaSpinner, FaCoins } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaWallet, FaSpinner, FaCoins, FaArrowLeft } from 'react-icons/fa';
 
 const PayrollPage = () => {
+  const navigate = useNavigate();
   const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const { payees } = usePayees();
@@ -285,8 +287,22 @@ const PayrollPage = () => {
     setErrors({});
   };
 
+  const handleBackClick = () => {
+    navigate('/payroll');
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Back Button */}
+      <div className="mb-6">
+        <button
+          onClick={handleBackClick}
+          className="flex items-center text-primary hover:text-primary-dark font-medium"
+        >
+          <FaArrowLeft className="mr-2" /> Back to Payroll Management
+        </button>
+      </div>
+
       {/* Wallet Not Connected Message */}
       {!publicKey && (
         <div className="text-center py-16">

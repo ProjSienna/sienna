@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaUsers, FaBriefcase, FaHistory } from 'react-icons/fa';
+import { FaHome, FaUsers } from 'react-icons/fa';
 import CustomWalletButton from './CustomWalletButton';
 
 const Navbar = () => {
@@ -31,28 +31,12 @@ const Navbar = () => {
                 <FaHome className="mr-2" /> Home
               </Link>
               <Link
-                to="/payees"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 ${
-                  isActive('/payees') ? 'border-secondary' : 'border-transparent'
-                } ${isActive('/payees')} hover:text-secondary transition-colors`}
-              >
-                <FaUsers className="mr-2" /> Payees
-              </Link>
-              <Link
                 to="/payroll"
                 className={`inline-flex items-center px-1 pt-1 border-b-2 ${
                   isActive('/payroll') ? 'border-secondary' : 'border-transparent'
                 } ${isActive('/payroll')} hover:text-secondary transition-colors`}
               >
-                <FaBriefcase className="mr-2" /> Payroll
-              </Link>
-              <Link
-                to="/history"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 ${
-                  isActive('/history') ? 'border-secondary' : 'border-transparent'
-                } ${isActive('/history')} hover:text-secondary transition-colors`}
-              >
-                <FaHistory className="mr-2" /> History
+                <FaUsers className="mr-2" /> Payroll
               </Link>
             </div>
           </div>
@@ -75,25 +59,11 @@ const Navbar = () => {
             Home
           </Link>
           <Link
-            to="/payees"
-            className={`flex flex-col items-center px-3 py-2 text-sm font-medium ${isActive('/payees')} hover:text-secondary transition-colors`}
-          >
-            <FaUsers className="text-lg mb-1" />
-            Payees
-          </Link>
-          <Link
             to="/payroll"
             className={`flex flex-col items-center px-3 py-2 text-sm font-medium ${isActive('/payroll')} hover:text-secondary transition-colors`}
           >
-            <FaBriefcase className="text-lg mb-1" />
+            <FaUsers className="text-lg mb-1" />
             Payroll
-          </Link>
-          <Link
-            to="/history"
-            className={`flex flex-col items-center px-3 py-2 text-sm font-medium ${isActive('/history')} hover:text-secondary transition-colors`}
-          >
-            <FaHistory className="text-lg mb-1" />
-            History
           </Link>
         </div>
       </div>

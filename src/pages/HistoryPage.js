@@ -101,8 +101,8 @@ const HistoryPage = () => {
           </div>
           
           {/* Filters */}
-          <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="md:col-span-3 relative">
+          <div className="mb-6">
+            <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <FaSearch className="text-gray-400" />
               </div>
@@ -115,7 +115,7 @@ const HistoryPage = () => {
               />
             </div>
             
-            <div>
+            <div className="mt-4">
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
