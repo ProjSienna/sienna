@@ -212,14 +212,22 @@ const PayeesPage = ({ initialTab = 'payees' }) => {
 
             {/* Payees Grid */}
             {filteredPayees.length === 0 && !payeeSearchTerm ? (
-              <div className="text-center py-16 bg-gray-50 rounded-lg">
-                <p className="text-gray-500 mb-4">You haven't added any payees yet.</p>
-                <button
-                  onClick={handleAddClick}
-                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 inline-flex items-center"
-                >
-                  <FaPlus className="mr-2" /> Add Your First Payee
-                </button>
+              <div className="text-center py-20 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                <div className="max-w-md mx-auto">
+                  <div className="bg-white p-4 rounded-full w-16 h-16 mx-auto mb-6 shadow-md flex items-center justify-center">
+                    <FaUsers className="text-primary text-2xl" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-3">No Payees Yet</h3>
+                  <p className="text-gray-600 mb-8 px-4">
+                    Get started by adding your first payee. You can add employees, contractors, or any other payment recipients.
+                  </p>
+                  <button
+                    onClick={handleAddClick}
+                    className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 inline-flex items-center shadow-md hover:shadow-lg transition-all"
+                  >
+                    <FaPlus className="mr-2" /> Add Your First Payee
+                  </button>
+                </div>
               </div>
             ) : filteredPayees.length === 0 && payeeSearchTerm ? (
               <div className="text-center py-16 bg-gray-50 rounded-lg">
