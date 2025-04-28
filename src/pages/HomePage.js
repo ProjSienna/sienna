@@ -1,15 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useTransactions } from '../contexts/TransactionsContext';
 import { formatWalletAddress } from '../utils/solana';
 import TransactionCard from '../components/TransactionCard';
 import WalletDetails from '../components/WalletDetails';
-import { FaWallet, FaHistory, FaMoneyBillWave, FaChartLine, FaArrowDown, FaArrowUp, FaUsers } from 'react-icons/fa';
+import RequestPaymentForm from '../components/RequestPaymentForm';
+import { 
+  FaWallet, 
+  FaHistory, 
+  FaMoneyBillWave, 
+  FaChartLine, 
+  FaArrowDown, 
+  FaArrowUp, 
+  FaUsers,
+  FaFileInvoiceDollar,
+  FaPeopleArrows,
+  FaRegClock,
+  FaShieldAlt
+} from 'react-icons/fa';
 
 const HomePage = () => {
   const { publicKey } = useWallet();
   const { transactions } = useTransactions();
+  const [showRequestPayment, setShowRequestPayment] = useState(false);
 
   // Show recent transactions
   const recentTransactions = transactions.slice(0, 5);
@@ -22,18 +36,110 @@ const HomePage = () => {
     monthlyGrowth: '+15%'
   };
 
+  const handleRequestPayment = () => {
+    setShowRequestPayment(true);
+  };
+
+  const features = [
+    {
+      icon: <FaMoneyBillWave className="text-3xl text-primary" />,
+      title: "Send Payments",
+      description: "Send instant USDC payments to anyone, anywhere in the world"
+    },
+    {
+      icon: <FaPeopleArrows className="text-3xl text-primary" />,
+      title: "Bulk Transfers",
+      description: "Process multiple payments in one go with our efficient bulk transfer system"
+    },
+    {
+      icon: <FaUsers className="text-3xl text-primary" />,
+      title: "Payroll Management",
+      description: "Streamline your payroll process with automated USDC payments"
+    },
+    {
+      icon: <FaArrowUp className="text-3xl text-primary" />,
+      title: "Request Payments",
+      description: "Create and share payment requests with customizable due dates"
+    },
+    {
+      icon: <FaFileInvoiceDollar className="text-3xl text-primary" />,
+      title: "Send Invoices",
+      description: "Generate professional invoices and get paid in USDC"
+    },
+    {
+      icon: <FaRegClock className="text-3xl text-primary" />,
+      title: "Real-time Tracking",
+      description: "Monitor all your transactions in real-time with detailed analytics"
+    }
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Wallet Not Connected Section */}
+      {/* Request Payment Modal */}
+      {showRequestPayment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <RequestPaymentForm onClose={() => setShowRequestPayment(false)} />
+        </div>
+      )}
+
+      {/* Landing Section for Non-Connected Users */}
       {!publicKey && (
-        <div className="text-center py-16">
-          <FaWallet className="text-6xl text-primary mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Connect Your Wallet</h1>
-          <p className="text-lg text-gray-600 mb-8">
-            Connect your Solana wallet to start earning yield on your USDC.
-          </p>
-          <div className="mt-6 text-center">
-            <p className="text-gray-500">Click the "Connect Wallet" button in the top-right corner to get started.</p>
+        <div className="space-y-16">
+          {/* Hero Section */}
+          <div className="text-center py-16 max-w-4xl mx-auto">
+            <h1 className="text-5xl font-bold text-gray-800 mb-6">
+              The Ultimate USDC Payment Experience
+            </h1>
+            <p className="text-xl text-gray-600 mb-8">
+              Send, receive, and manage payments globally with the power of USDC on Solana.
+              Experience lightning-fast transactions at a fraction of the cost.
+            </p>
+            <div className="flex items-center justify-center gap-4">
+              <div className="flex items-center gap-2 text-primary">
+                <FaShieldAlt />
+                <span>Secure</span>
+              </div>
+              <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+              <div className="flex items-center gap-2 text-primary">
+                <FaRegClock />
+                <span>Instant</span>
+              </div>
+              <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+              <div className="flex items-center gap-2 text-primary">
+                <FaMoneyBillWave />
+                <span>Low Fees</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Features Grid */}
+          <div>
+            <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+              Everything You Need for Modern Payments
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {features.map((feature, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                  <div className="mb-4">{feature.icon}</div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{feature.title}</h3>
+                  <p className="text-gray-600">{feature.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA Section */}
+          <div className="text-center py-12 bg-gray-50 rounded-xl">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Ready to Get Started?
+            </h2>
+            <p className="text-gray-600 mb-8">
+              Connect your wallet to start sending and receiving payments in USDC.
+            </p>
+            <div className="flex justify-center items-center gap-2 text-gray-500">
+              <FaWallet className="text-xl" />
+              <span>Click "Connect Wallet" in the top-right corner to begin</span>
+            </div>
           </div>
         </div>
       )}
@@ -120,7 +226,7 @@ const HomePage = () => {
                   </button>
 
                   <button
-                    onClick={() => {/* Handle payment request */}}
+                    onClick={handleRequestPayment}
                     className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
                   >
                     <div className="bg-green-500 bg-opacity-10 p-2 rounded-md">
