@@ -17,7 +17,8 @@ import {
   FaFileInvoiceDollar,
   FaPeopleArrows,
   FaRegClock,
-  FaShieldAlt
+  FaShieldAlt,
+  FaSatelliteDish
 } from 'react-icons/fa';
 
 const HomePage = () => {
@@ -67,9 +68,9 @@ const HomePage = () => {
       description: "Generate professional invoices and get paid in USDC"
     },
     {
-      icon: <FaRegClock className="text-3xl text-primary" />,
-      title: "Real-time Tracking",
-      description: "Monitor all your transactions in real-time with detailed analytics"
+      icon: <FaSatelliteDish className="text-3xl text-primary" />,
+      title: "Web3 Integration",
+      description: "Real-time on-chain balance tracking with direct Solana blockchain connection"
     }
   ];
 

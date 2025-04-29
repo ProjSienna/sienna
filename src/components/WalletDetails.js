@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { formatWalletAddress } from '../utils/solana';
-import { externalApi } from '../utils/api';
-import { FEATURES } from '../config';
-import { FaCheckCircle, FaTimesCircle, FaSpinner, FaCopy, FaExternalLinkAlt, FaArrowUp, FaArrowDown, FaPercent } from 'react-icons/fa';
+import { fetchWalletBalances } from '../utils/web3';
+import { FaCheckCircle, FaTimesCircle, FaSpinner, FaCopy, FaExternalLinkAlt, FaArrowUp, FaArrowDown, FaPercent, FaSync } from 'react-icons/fa';
 
 /**
  * Displays detailed information about a wallet including:
- * - Balance information from backend API
+ * - Balance information fetched directly from the blockchain
  * - Copy to clipboard functionality
  * - Link to Solana Explorer
  */
 const WalletDetails = () => {
   const { publicKey } = useWallet();
-  const [balance, setBalance] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { connection } = useConnection();
+  const [walletBalance, setWalletBalance] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -30,32 +30,28 @@ const WalletDetails = () => {
 
   useEffect(() => {
     if (publicKey) {
-      fetchWalletData();
+      fetchBalances();
     }
-  }, [publicKey]);
+  }, [publicKey, connection]);
 
-  const fetchWalletData = async () => {
-    if (!publicKey) return;
+  const fetchBalances = async () => {
+    if (!publicKey || !connection) return;
     
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
 
     try {
-      // Only fetch balance if BALANCE_CHECKS feature is enabled
-      if (FEATURES.BALANCE_CHECKS) {
-        try {
-          const balanceData = await externalApi.getWalletBalance(publicKey.toString());
-          setBalance(balanceData);
-        } catch (err) {
-          console.error('Failed to fetch balance:', err);
-          setError('Failed to load wallet balance');
-        }
+      const balances = await fetchWalletBalances(connection, publicKey.toString());
+      if (balances.success) {
+        setWalletBalance(balances);
+      } else {
+        setError(balances.error || 'Failed to fetch on-chain balances');
       }
     } catch (err) {
-      console.error('Error fetching wallet data:', err);
-      setError('Failed to load wallet details');
+      console.error('Error fetching wallet balances:', err);
+      setError('Failed to load wallet balances');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -73,12 +69,15 @@ const WalletDetails = () => {
   };
 
   const handleDeposit = () => {
-    const depositAmount = balance?.usdc * 0.8 || 0;
     setShowDepositModal(true);
   };
 
   const handleWithdraw = () => {
     setShowWithdrawModal(true);
+  };
+
+  const handleRefreshBalances = () => {
+    fetchBalances();
   };
 
   if (!publicKey) {
@@ -131,18 +130,48 @@ const WalletDetails = () => {
         </div>
       )}
       
-      {/* USDC Balance */}
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Your Balance</h3>
-        {loading ? (
-          <div className="flex items-center text-gray-500">
-            <FaSpinner className="animate-spin mr-2" /> Loading balance...
+      {/* Wallet Balances Section */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-lg font-semibold text-gray-800">On-Chain Balances</h3>
+          <button 
+            onClick={handleRefreshBalances}
+            className="text-primary hover:text-primary-dark p-1"
+            title="Refresh balances"
+            disabled={isLoading}
+          >
+            <FaSync className={isLoading ? "animate-spin" : ""} size={14} />
+          </button>
+        </div>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
+            <FaSpinner className="animate-spin text-primary mr-2" /> 
+            <span>Loading wallet balances...</span>
           </div>
         ) : (
-          <div className="text-3xl font-bold text-primary">
-            {balance?.usdc?.toFixed(2) || '0.00'} USDC
+          <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+            <div>
+              <p className="text-sm text-gray-500">SOL</p>
+              <p className="text-xl font-bold text-purple-600">{walletBalance?.sol?.toFixed(4) || '0'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">USDC</p>
+              <p className="text-xl font-bold text-primary">{walletBalance?.usdc?.toFixed(2) || '0'}</p>
+            </div>
           </div>
         )}
+        <p className="text-xs text-gray-500 mt-1">
+          Fetched directly from Solana blockchain
+        </p>
+      </div>
+      
+      {/* USDC Balance for Summary - Main Balance Display */}
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Your Balance</h3>
+        <div className="text-3xl font-bold text-primary">
+          {walletBalance?.usdc?.toFixed(2) || '0.00'} USDC
+        </div>
       </div>
 
       {/* Yield Information */}
@@ -194,13 +223,13 @@ const WalletDetails = () => {
             <p className="text-gray-600 mb-4">
               Recommended deposit amount (80% of balance):
               <span className="block text-2xl font-bold text-primary mt-2">
-                {(balance?.usdc * 0.8).toFixed(2) || '0.00'} USDC
+                {(walletBalance?.usdc * 0.8).toFixed(2) || '0.00'} USDC
               </span>
             </p>
             <p className="text-sm text-gray-500 mb-6">
               Expected annual yield at {yieldInfo.apy}% APY:
               <span className="block text-lg font-semibold text-green-600 mt-1">
-                {((balance?.usdc * 0.8 * yieldInfo.apy) / 100).toFixed(2)} USDC
+                {((walletBalance?.usdc * 0.8 * yieldInfo.apy) / 100).toFixed(2) || '0.00'} USDC
               </span>
             </p>
             <div className="flex justify-end space-x-3">
