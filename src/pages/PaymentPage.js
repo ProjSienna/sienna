@@ -40,7 +40,8 @@ const PaymentPage = () => {
       email: recipient.email || '',
       walletAddress: recipient.wallet,
       amount: parseFloat(request.amount),
-      category: request.relationship || 'other'
+      category: request.relationship || 'other',
+      memo: request.description || '' // Include the description as memo
     };
   };
 

@@ -11,13 +11,15 @@ const PaymentForm = ({ payee, onSuccess, onCancel }) => {
   const { addTransaction } = useTransactions();
   
   const [amount, setAmount] = useState(payee?.amount || '');
-  const [memo, setMemo] = useState('');
+  const [memo, setMemo] = useState(payee?.memo || '');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (payee?.amount) {
-      setAmount(payee.amount.toString());
+    // Update form when payee data changes
+    if (payee) {
+      if (payee.amount) setAmount(payee.amount.toString());
+      if (payee.memo) setMemo(payee.memo);
     }
   }, [payee]);
 
@@ -32,7 +34,7 @@ const PaymentForm = ({ payee, onSuccess, onCancel }) => {
   const handleCancel = () => {
     // Clear form state before closing
     setAmount(payee?.amount?.toString() || '');
-    setMemo('');
+    setMemo(payee?.memo || '');
     setError('');
     
     // Call the onCancel callback if provided
@@ -63,6 +65,7 @@ const PaymentForm = ({ payee, onSuccess, onCancel }) => {
         fromWallet: publicKey,
         toWallet: payee.walletAddress,
         amount: parseFloat(amount),
+        memo: memo || undefined,
       });
 
       // Send transaction
@@ -160,10 +163,16 @@ const PaymentForm = ({ payee, onSuccess, onCancel }) => {
             id="memo"
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-lg"
+            className={`w-full p-2 border border-gray-300 rounded-lg ${payee?.memo ? 'bg-gray-50' : ''}`}
             placeholder="What's this payment for? (optional)"
-            disabled={isProcessing}
+            disabled={isProcessing || payee?.memo}
+            title={payee?.memo ? "Memo provided from payment request" : ""}
           />
+          {payee?.memo && (
+            <p className="text-xs text-gray-500 mt-1">
+              ℹ️ Description from payment request
+            </p>
+          )}
         </div>
         
         {/* Error message */}
