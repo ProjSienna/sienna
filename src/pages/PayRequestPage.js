@@ -34,11 +34,11 @@ const usePaymentRequestData = () => {
 
 const PayRequestPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { connected } = useWallet();
   const { paymentData, error } = usePaymentRequestData();
   const [step, setStep] = useState(1);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [readyToPay, setReadyToPay] = useState(false);
 
   // Show confetti animation when the component mounts
   useEffect(() => {
@@ -48,11 +48,6 @@ const PayRequestPage = () => {
       return () => clearTimeout(timer);
     }
   }, [paymentData, error]);
-
-  // Proceed directly to payment when user clicks the button
-  const startPayment = () => {
-    navigate(`/payment?data=${encodeURIComponent(JSON.stringify(paymentData))}`);
-  };
 
   if (error) {
     return (
@@ -102,6 +97,34 @@ const PayRequestPage = () => {
   const handleContinue = () => {
     setStep(2);
   };
+
+  const startPayment = () => {
+    setReadyToPay(true);
+  };
+
+  if (readyToPay) {
+    // When ready to pay, redirect to the payment form with the data
+    return (
+      <div className="max-w-3xl mx-auto my-12 px-6">
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-center mb-6">
+            Proceeding to Payment...
+          </h2>
+          <p className="text-center mb-8">
+            Redirecting you to the payment form. If nothing happens, click the button below.
+          </p>
+          <div className="text-center">
+            <button
+              onClick={() => navigate(`/payment?data=${encodeURIComponent(JSON.stringify(paymentData))}`)}
+              className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+            >
+              Continue to Payment
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

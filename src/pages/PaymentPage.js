@@ -14,15 +14,40 @@ const PaymentPage = () => {
   useEffect(() => {
     try {
       const params = new URLSearchParams(location.search);
-      const encodedData = params.get('data');
       
-      if (!encodedData) {
-        setError('No payment request data found');
+      // First try the new simplified URL format
+      const recipient = params.get('recipient');
+      const email = params.get('email');
+      const amount = params.get('amount');
+      const description = params.get('description');
+      const wallet = params.get('wallet');
+      
+      if (recipient && email && amount) {
+        // Use the new URL format
+        setPaymentData({
+          recipient: {
+            name: recipient,
+            email: email,
+            wallet: wallet || ''
+          },
+          request: {
+            amount: amount,
+            description: description ? decodeURIComponent(description) : '',
+            relationship: 'other'
+          }
+        });
         return;
       }
       
-      const decodedData = JSON.parse(decodeURIComponent(encodedData));
-      setPaymentData(decodedData);
+      // Fall back to the old JSON format if needed
+      const encodedData = params.get('data');
+      if (encodedData) {
+        const decodedData = JSON.parse(decodeURIComponent(encodedData));
+        setPaymentData(decodedData);
+        return;
+      }
+      
+      setError('No payment request data found');
     } catch (err) {
       console.error('Error parsing payment request data:', err);
       setError('Invalid payment request format');
@@ -88,11 +113,11 @@ const PaymentPage = () => {
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
         <button
-          onClick={() => navigate('/pay' + location.search)}
+          onClick={() => navigate('/')}
           className="flex items-center text-primary hover:text-primary/90"
         >
           <FaArrowLeft className="mr-2" />
-          Back to payment details
+          Back to home
         </button>
       </div>
 
@@ -126,7 +151,7 @@ const PaymentPage = () => {
         <PaymentForm 
           payee={payee} 
           onSuccess={handlePaymentSuccess} 
-          onCancel={() => navigate('/pay' + location.search)}
+          onCancel={() => navigate('/')}
         />
       )}
     </div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sienna Payment Request</title>
+    <title>Payment Request</title>
     <!--[if mso]>
     <style type="text/css">
         table {border-collapse:collapse;border-spacing:0;margin:0;}
@@ -24,83 +24,52 @@
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
             <td align="center" style="padding: 40px 10px;">
-                <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(160, 82, 45, 0.1);">
-                    <!-- Header with Logo -->
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 6px 18px rgba(160, 82, 45, 0.15); overflow: hidden;">
+                    <!-- Header with Decorative Element -->
                     <tr>
-                        <td align="center" style="padding: 30px 40px 20px; background-color: rgba(160, 82, 45, 0.1); border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom: 1px solid rgba(160, 82, 45, 0.2);">
-                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                                <tr>
-                                    <td align="center">
-                                        <h1 style="margin: 0; color: #A0522D; font-family: 'Playfair Display', serif; font-size: 28px; font-weight: bold;">Sienna</h1>
-                                        <p style="margin: 5px 0 0; color: #4A3728; font-size: 14px; font-style: italic;">USDC Payments on Solana</p>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
+                        <td style="background: linear-gradient(135deg, #A0522D 0%, #CD853F 100%); height: 8px;"></td>
                     </tr>
                     
                     <!-- Main Content -->
                     <tr>
-                        <td style="padding: 40px;">
+                        <td style="padding: 45px 40px;">
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                                <!-- Payment Request Heading -->
+                                <!-- Warm Greeting -->
                                 <tr>
-                                    <td align="center" style="padding-bottom: 30px;">
-                                        <h2 style="margin: 0; color: #A0522D; font-family: 'Playfair Display', serif; font-size: 24px; font-weight: bold;">Payment Request</h2>
+                                    <td style="padding-bottom: 25px;">
+                                        <p style="margin: 0; font-size: 18px; line-height: 1.5; color: #A0522D; font-weight: 600; font-family: 'Playfair Display', serif;">Hello {{recipient_name}},</p>
                                     </td>
                                 </tr>
                                 
-                                <!-- Greeting -->
+                                <!-- Personalized Message Placeholder with Emotional Value -->
                                 <tr>
-                                    <td style="padding-bottom: 20px;">
-                                        <p style="margin: 0; font-size: 16px; line-height: 1.5;">Hello {{recipient_name}},</p>
-                                    </td>
-                                </tr>
-                                
-                                <!-- Personalized Message Placeholder -->
-                                <tr>
-                                    <td style="padding-bottom: 30px;">
-                                        <p style="margin: 0; font-size: 16px; line-height: 1.5;">
+                                    <td style="padding-bottom: 35px;">
+                                        <p style="margin: 0; font-size: 16px; line-height: 1.7; color: #2D1D15;">
                                             {{personalized_message}}
                                         </p>
                                     </td>
                                 </tr>
                                 
-                                <!-- Payment Details Card -->
+                                <!-- Relationship-focused Card -->
                                 <tr>
-                                    <td style="padding-bottom: 30px;">
-                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F8E2D5; border-radius: 12px; padding: 20px;">
+                                    <td style="padding-bottom: 35px;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, #F8E2D5 0%, #F9E7DD 100%); border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(160, 82, 45, 0.07);">
                                             <tr>
                                                 <td align="center" style="padding-bottom: 15px;">
-                                                    <p style="margin: 0; font-weight: bold; font-size: 20px; color: #2D1D15;">Payment Amount</p>
-                                                    <h3 style="margin: 10px 0 0; font-size: 32px; color: #A0522D; font-weight: bold;">{{amount}} USDC</h3>
+                                                    <p style="margin: 0 0 5px; font-size: 16px; color: #4A3728; font-style: italic;">A thoughtful request from</p>
+                                                    <h3 style="margin: 0 0 15px; font-size: 24px; color: #A0522D; font-weight: bold; letter-spacing: 0.5px; font-family: 'Playfair Display', serif;">{{sender_name}}</h3>
+                                                    <p style="margin: 10px 0 5px; font-size: 16px; color: #4A3728;">Amount requested:</p>
+                                                    <p style="margin: 0; font-size: 28px; color: #A0522D; font-weight: 500; letter-spacing: 0.5px; display: inline-block; background-color: rgba(255, 255, 255, 0.5); padding: 4px 15px; border-radius: 30px;">{{amount}} <span style="font-size: 18px;">USDC</span></p>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>
                                                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                                                         <tr>
-                                                            <td width="50%" style="padding: 8px 0; border-top: 1px solid rgba(160, 82, 45, 0.2);">
-                                                                <p style="margin: 0; font-size: 14px; color: #4A3728;">From:</p>
-                                                            </td>
-                                                            <td width="50%" style="padding: 8px 0; border-top: 1px solid rgba(160, 82, 45, 0.2); text-align: right;">
-                                                                <p style="margin: 0; font-size: 14px; font-weight: 500; color: #2D1D15;">{{sender_name}}</p>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td width="50%" style="padding: 8px 0; border-top: 1px solid rgba(160, 82, 45, 0.2);">
-                                                                <p style="margin: 0; font-size: 14px; color: #4A3728;">For:</p>
-                                                            </td>
-                                                            <td width="50%" style="padding: 8px 0; border-top: 1px solid rgba(160, 82, 45, 0.2); text-align: right;">
-                                                                <p style="margin: 0; font-size: 14px; font-weight: 500; color: #2D1D15;">{{description}}</p>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td width="50%" style="padding: 8px 0; border-top: 1px solid rgba(160, 82, 45, 0.2);">
-                                                                <p style="margin: 0; font-size: 14px; color: #4A3728;">Due Date:</p>
-                                                            </td>
-                                                            <td width="50%" style="padding: 8px 0; border-top: 1px solid rgba(160, 82, 45, 0.2); text-align: right;">
-                                                                <p style="margin: 0; font-size: 14px; font-weight: 500; color: #2D1D15;">{{due_date}}</p>
+                                                            <td width="100%" style="padding: 12px 0; border-top: 1px solid rgba(160, 82, 45, 0.15); text-align: center;">
+                                                                <p style="margin: 0; font-size: 14px; color: #4A3728; font-weight: 500;">
+                                                                    <span style="color: #2D1D15;">Due by:</span> {{due_date}}
+                                                                </p>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -110,35 +79,55 @@
                                     </td>
                                 </tr>
                                 
-                                <!-- Payment Button Placeholder -->
+                                <!-- Emotional Appeal Message -->
                                 <tr>
-                                    <td align="center" style="padding-bottom: 30px;">
+                                    <td style="padding-bottom: 30px; text-align: center;">
+                                        <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #4A3728; font-style: italic;">
+                                            Every payment strengthens our connection and makes our collaboration smoother.
+                                        </p>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Payment Button with Emotional Value -->
+                                <tr>
+                                    <td align="center" style="padding-bottom: 35px;">
                                         <!-- Replace with actual payment link -->
-                                        <a href="{{payment_link}}" style="display: inline-block; background-color: #A0522D; color: #ffffff; font-family: 'Raleway', 'Poppins', sans-serif; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 24px; border-radius: 8px;">
-                                            Make Payment
+                                        <a href="{{payment_link}}" style="display: inline-block; background: linear-gradient(135deg, #A0522D 0%, #CD853F 100%); color: #ffffff; font-family: 'Raleway', 'Poppins', sans-serif; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 28px; border-radius: 50px; box-shadow: 0 4px 10px rgba(160, 82, 45, 0.25); transition: all 0.3s ease;">
+                                            Respond with Payment
                                         </a>
                                     </td>
                                 </tr>
                                 
-                                <!-- Info Box -->
+                                <!-- Info Box with Relationship Focus -->
                                 <tr>
-                                    <td style="padding-bottom: 30px;">
-                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: rgba(233, 150, 122, 0.1); border-radius: 12px; padding: 15px;">
+                                    <td style="padding-bottom: 35px;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background: linear-gradient(135deg, rgba(233, 150, 122, 0.08) 0%, rgba(205, 133, 63, 0.08) 100%); border-radius: 12px; padding: 20px; border-left: 3px solid #E9967A;">
                                             <tr>
                                                 <td>
-                                                    <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #4A3728;">
-                                                        <strong style="color: #A0522D;">Quick Tip:</strong> Sending USDC on Solana typically takes less than 1 second and costs only a fraction of a cent. It's like teleporting money! ⚡
-                                                    </p>
+                                                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td style="vertical-align: top; padding-right: 15px;">
+                                                                <div style="width: 24px; height: 24px; background-color: #E9967A; border-radius: 50%; position: relative;">
+                                                                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Arial', sans-serif; font-size: 16px; color: white; font-weight: bold;">!</div>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #4A3728;">
+                                                                    <strong style="color: #A0522D;">Quick Tip:</strong> Sending USDC on Solana typically takes less than 1 second and costs only a fraction of a cent. It's like teleporting money! ⚡
+                                                                </p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
                                                 </td>
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
                                 
-                                <!-- Thank You Note -->
+                                <!-- Thank You Note with Emotional Appeal -->
                                 <tr>
                                     <td style="padding-bottom: 20px;">
-                                        <p style="margin: 0; font-size: 16px; line-height: 1.5;">Thank you for using Sienna for your payments. If you have any questions, please don't hesitate to reach out.</p>
+                                        <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #4A3728;">Thank you for using Sienna for your payments. If you have any questions, please don't hesitate to reach out.</p>
                                     </td>
                                 </tr>
                             </table>
@@ -147,13 +136,25 @@
                     
                     <!-- Footer -->
                     <tr>
-                        <td align="center" style="background-color: #F8E2D5; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; padding: 20px 40px;">
-                            <p style="margin: 0; font-size: 14px; color: #4A3728;">
-                                &copy; 2024 Project Sienna - USDC Payroll on Solana
-                            </p>
-                            <p style="margin: 5px 0 0; font-size: 12px; font-style: italic; color: #A0522D;">
-                                Elegantly crafted for the Solana community
-                            </p>
+                        <td>
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td style="background: linear-gradient(135deg, #F8E2D5 0%, #F9E7DD 100%); padding: 18px 40px;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                            <tr>
+                                                <td align="center">
+                                                    <p style="margin: 0; font-size: 12px; color: #4A3728; font-weight: 500;">
+                                                        &copy; 2025 Project Sienna
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background: linear-gradient(135deg, #A0522D 0%, #CD853F 100%); height: 6px;"></td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
                 </table>

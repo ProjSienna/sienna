@@ -6,7 +6,6 @@ import {
     Keypair,
     TransactionMessage,
     VersionedTransaction,
-    TransactionInstruction,
 } from "@solana/web3.js";
 import {
     createTransferInstruction,
@@ -40,7 +39,6 @@ export async function sendUSDC({
     fromWallet,
     toWallet,
     amount,
-    memo = null,
     isKeypair = false,  // Flag to indicate if fromWallet is a Keypair
 }) {
     try {
@@ -83,16 +81,6 @@ export async function sendUSDC({
             feePayer: fromPubkey,
             lastValidBlockHeight,
         }).add(transferInstruction);
-
-        // Add memo instruction if provided
-        if (memo) {
-            const memoInstruction = new TransactionInstruction({
-                keys: [],
-                programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
-                data: Buffer.from(memo, 'utf8'),
-            });
-            transaction.add(memoInstruction);
-        }
 
         // If we have a full keypair (with private key), we can send and confirm directly
         if (isKeypair && fromWallet.secretKey) {
