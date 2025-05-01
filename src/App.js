@@ -8,6 +8,8 @@ import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import PayeesPage from './pages/PayeesPage';
 import PayrollPage from './pages/PayrollPage';
+import PaymentPage from './pages/PaymentPage';
+import PayRequestPage from './pages/PayRequestPage';
 import './App.css';
 
 function App() {
@@ -25,6 +27,8 @@ function App() {
                     <Route path="/payroll" element={<PayeesPage />} />
                     <Route path="/payroll/run" element={<PayrollPage />} />
                     <Route path="/history" element={<PayeesPage initialTab="history" />} />
+                    <Route path="/pay" element={<PayRequestPage />} />
+                    <Route path="/payment" element={<PaymentPage />} />
                   </Routes>
                 </main>
                 <footer className="bg-neutral text-center py-8 mt-8 border-t border-primary border-opacity-20">
