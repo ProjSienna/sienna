@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { formatWalletAddress } from '../utils/solana';
+import { formatWalletAddress, USDC_MINT } from '../utils/solana';
 import { fetchWalletBalances } from '../utils/web3';
 import { FaCheckCircle, FaTimesCircle, FaSpinner, FaCopy, FaExternalLinkAlt, FaArrowUp, FaArrowDown, FaPercent, FaSync, FaWallet } from 'react-icons/fa';
-
+import { lulo } from '../api';
+import { sendAndConfirmTransaction } from '@solana/web3.js';
 /**
  * Displays detailed information about a wallet including:
  * - Balance information fetched directly from the blockchain
@@ -11,7 +12,7 @@ import { FaCheckCircle, FaTimesCircle, FaSpinner, FaCopy, FaExternalLinkAlt, FaA
  * - Link to Solana Explorer
  */
 const WalletDetails = () => {
-  const { publicKey } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const [walletBalance, setWalletBalance] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,14 +20,19 @@ const WalletDetails = () => {
   const [copied, setCopied] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-
-  // Example yield data - replace with actual API data
-  const yieldInfo = {
-    apy: 5.2,
-    totalDeposited: 1000,
-    earnedInterest: 52,
-    projectedAnnualYield: 52
-  };
+  const [yieldInfo, setYieldInfo] = useState({
+    apy: {
+      '1HR': 0,
+      '1YR': 0,
+      '7DAY': 0,
+      '24HR': 0,
+      '30DAY': 0,
+      'CURRENT': 0,
+    },
+    totalDeposited: 0,
+    earnedInterest: 0,
+    projectedAnnualYield: 0
+  });
 
   useEffect(() => {
     if (publicKey) {
@@ -34,6 +40,19 @@ const WalletDetails = () => {
     }
   }, [publicKey, connection]);
 
+  useEffect(() => {
+    fetchRates();
+  }, []);
+
+
+  const fetchRates = async () => {
+    const rates = await lulo.getRates();
+    const { protected: protectedRate } = rates;
+    setYieldInfo({
+      apy: protectedRate
+    });
+  };
+  
   const fetchBalances = async () => {
     if (!publicKey || !connection) return;
     
@@ -78,6 +97,16 @@ const WalletDetails = () => {
 
   const handleRefreshBalances = () => {
     fetchBalances();
+  };
+
+  const handleDepositConfirm = async () => {
+    setShowDepositModal(false);
+    // TODO: Implement deposit API call
+  };
+
+  const handleWithdrawConfirm = () => {
+    setShowWithdrawModal(false);
+    // TODO: Implement withdraw API call
   };
 
   if (!publicKey) {
@@ -162,7 +191,7 @@ const WalletDetails = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500">Current APY</p>
-              <p className="text-xl font-bold text-primary">{yieldInfo.apy}%</p>
+              <p className="text-xl font-bold text-primary">{yieldInfo.apy['CURRENT'].toFixed(2)}%</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Total Deposited</p>
@@ -208,9 +237,9 @@ const WalletDetails = () => {
               </span>
             </p>
             <p className="text-sm text-gray-500 mb-6">
-              Expected annual yield at {yieldInfo.apy}% APY:
+              Expected annual yield at {yieldInfo.apy['1YR'].toFixed(2)}% APY:
               <span className="block text-lg font-semibold text-green-600 mt-1">
-                {((walletBalance?.usdc * 0.8 * yieldInfo.apy) / 100).toFixed(2) || '0.00'} USDC
+                {((walletBalance?.usdc * 0.8 * yieldInfo.apy['1HR']) / 100).toFixed(2) || '0.00'} USDC
               </span>
             </p>
             <div className="flex justify-end space-x-3">
@@ -221,10 +250,7 @@ const WalletDetails = () => {
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  // Handle deposit logic here
-                  setShowDepositModal(false);
-                }}
+                onClick={handleDepositConfirm}
                 className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
               >
                 Confirm Deposit
@@ -253,10 +279,7 @@ const WalletDetails = () => {
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  // Handle withdraw logic here
-                  setShowWithdrawModal(false);
-                }}
+                onClick={handleWithdrawConfirm}
                 className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
               >
                 Confirm Withdraw

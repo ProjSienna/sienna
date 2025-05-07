@@ -16,6 +16,8 @@ import {
 
 // USDC token mint address (mainnet)
 export const USDC_MINT = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+// devnet USDC
+// export const USDC_MINT = new PublicKey('Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr');
 
 // USDC token account
 export async function findAssociatedTokenAddress(

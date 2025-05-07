@@ -16,6 +16,8 @@ const WalletContext = ({ children }) => {
   // TODO: Move this RPC endpoint to a backend proxy for production
   // Using direct RPC endpoint for now - to be replaced with backend proxy
   const endpoint = "https://mainnet.helius-rpc.com/?api-key=e3e38817-187e-4a3b-b5cd-b40a0429c0c6";
+  // DEVNET endpoint
+  // const endpoint = "https://devnet.helius-rpc.com/?api-key=e3e38817-187e-4a3b-b5cd-b40a0429c0c6";
   
   // Only instantiate the wallets you want to use
   const wallets = useMemo(
