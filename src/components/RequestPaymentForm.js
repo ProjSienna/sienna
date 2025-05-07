@@ -30,6 +30,7 @@ const RequestPaymentForm = ({ onClose }) => {
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [paymentLink, setPaymentLink] = useState('');
+  const [senderEmail, setSenderEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
   const [copied, setCopied] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
@@ -93,24 +94,31 @@ const RequestPaymentForm = ({ onClose }) => {
     e.preventDefault();
     setStep(3);
     
-    // Generate a simpler payment link with query parameters
+    // Generate a payment link that points to the pay-request page
     const baseUrl = process.env.REACT_APP_FRONTEND_URL || window.location.origin;
     const recipient = selectedPayee || newRecipient;
     
-    // Create a query string with payment details
-    const queryParams = new URLSearchParams({
-      recipient: recipient.name,
-      email: recipient.email,
-      amount: amount,
-      description: encodeURIComponent(description)
-    });
-    
-    if (selectedPayee?.walletAddress) {
-      queryParams.append('wallet', selectedPayee.walletAddress);
-    }
+    // Create the data object that matches the PayRequestPage expected format
+    const requestData = {
+      sender: {
+        wallet: publicKey ? publicKey.toString() : 'Unknown'
+      },
+      recipient: {
+        name: recipient.name,
+        email: recipient.email,
+        wallet: selectedPayee?.walletAddress || ''
+      },
+      request: {
+        amount: amount,
+        description: description,
+        dueDate: dueDate || '',
+        relationship: selectedPayee?.category || newRecipient.relationship,
+        timestamp: new Date().toISOString()
+      }
+    };
     
     // Generate the final payment link
-    const generatedLink = `${baseUrl}/pay?${queryParams.toString()}`;
+    const generatedLink = `${baseUrl}/pay-request?data=${encodeURIComponent(JSON.stringify(requestData))}`;
     setPaymentLink(generatedLink);
   };
 
@@ -136,7 +144,7 @@ const RequestPaymentForm = ({ onClose }) => {
         relationship: selectedPayee?.category || newRecipient.relationship,
         senderName: publicKey ? `${publicKey.toString().slice(0, 6)}...` : 'Sienna User',
         context: description,
-        senderEmail: '',  // You may need to collect sender's email separately
+        senderEmail: senderEmail,
         paymentLink: paymentLink
       };
       
@@ -333,6 +341,20 @@ const RequestPaymentForm = ({ onClose }) => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="What is this payment for?"
               rows={3}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Your Email (For Communication)*
+            </label>
+            <input
+              type="email"
+              value={senderEmail}
+              onChange={(e) => setSenderEmail(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              placeholder="Your email address"
               required
             />
           </div>
