@@ -53,9 +53,24 @@ const HomePage = () => {
     
     try {
       setSubscribing(true);
-      // Here you would normally call your API to add the email to your list
-      // For now, we'll simulate a successful API call with a timeout
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Call the API to add the email to the contact list
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${apiUrl}/api/email/add-contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          updateEnabled: false
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to subscribe');
+      }
       
       setSubscribed(true);
       // Reset after 5 seconds
@@ -65,6 +80,7 @@ const HomePage = () => {
       }, 5000);
     } catch (error) {
       console.error('Subscription error:', error);
+      alert('Could not subscribe at this time. Please try again later.');
     } finally {
       setSubscribing(false);
     }
