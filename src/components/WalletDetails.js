@@ -4,7 +4,7 @@ import { formatWalletAddress, USDC_MINT } from '../utils/solana';
 import { fetchWalletBalances } from '../utils/web3';
 import { FaCheckCircle, FaTimesCircle, FaSpinner, FaCopy, FaExternalLinkAlt, FaArrowUp, FaArrowDown, FaPercent, FaSync, FaWallet } from 'react-icons/fa';
 import { lulo } from '../api';
-import { sendAndConfirmTransaction } from '@solana/web3.js';
+import { sendAndConfirmTransaction, Transaction, VersionedTransaction } from '@solana/web3.js';
 /**
  * Displays detailed information about a wallet including:
  * - Balance information fetched directly from the blockchain
@@ -101,7 +101,52 @@ const WalletDetails = () => {
 
   const handleDepositConfirm = async () => {
     setShowDepositModal(false);
-    // TODO: Implement deposit API call
+    if (!publicKey || !connection) return;
+    
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const depositAmount = (walletBalance?.usdc * 0.8).toFixed(2) || 0.00;
+      if (depositAmount < 1) {
+        throw new Error('Deposit amount must be at least 1 USDC');
+      }
+      
+      // Call backend API to get the transaction (serialized in base64)
+      const { transaction: serializedTx } = await lulo.deposit(publicKey.toString(), USDC_MINT, depositAmount);
+      
+      // Decode base64 to Transaction object
+      const transactionBuffer = Buffer.from(serializedTx, 'base64');
+      const transaction = VersionedTransaction.deserialize(transactionBuffer);
+      
+      // Send transaction for wallet signing
+      const signature = await sendTransaction(transaction, connection, {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+        maxRetries: 5,
+      });
+        
+      // Wait for confirmation
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+      const confirmation = await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight
+      }, 'confirmed');
+
+      if (confirmation.value.err) {
+        throw new Error(`Transaction failed to confirm: ${JSON.stringify(confirmation.value.err)}`);
+      }
+
+      // console.log('Transaction confirmed:', signature);
+      setShowDepositModal(false);
+    } catch (err) {
+      console.error('Error during deposit:', err);
+      setError(err.message || 'Transaction failed');
+    } finally {
+      setIsLoading(false);
+      await fetchBalances();
+    }
   };
 
   const handleWithdrawConfirm = () => {

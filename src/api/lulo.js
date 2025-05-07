@@ -1,4 +1,3 @@
-
 const API_URL = process.env.SIENNA_API_URL || 'http://localhost:5000';
 export const lulo = {
   deposit: async (owner, mintAddress, protectedAmount) => {
