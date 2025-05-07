@@ -48,9 +48,9 @@ const HomePage = () => {
       description: "Send instant USDC payments to anyone, anywhere in the world"
     },
     {
-      icon: <FaPeopleArrows className="text-3xl text-primary" />,
-      title: "Bulk Transfers",
-      description: "Process multiple payments in one go with our efficient bulk transfer system"
+      icon: <FaSatelliteDish className="text-3xl text-primary" />,
+      title: "Cross-Border Transactions",
+      description: "Fast settlement feature for seamless international transactions"
     },
     {
       icon: <FaUsers className="text-3xl text-primary" />,
@@ -68,10 +68,10 @@ const HomePage = () => {
       description: "Generate professional invoices and get paid in USDC"
     },
     {
-      icon: <FaSatelliteDish className="text-3xl text-primary" />,
-      title: "Web3 Integration",
-      description: "Real-time on-chain balance tracking with direct Solana blockchain connection"
-    }
+      icon: <FaPeopleArrows className="text-3xl text-primary" />,
+      title: "Bulk Transfers",
+      description: "Process multiple payments in one go with our efficient bulk transfer system"
+    },
   ];
 
   return (
@@ -116,7 +116,7 @@ const HomePage = () => {
           {/* Features Grid */}
           <div>
             <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
-              Everything You Need for Modern Payments
+              Ideal for Small Biz, Gig Economy, and Freelancers
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {features.map((feature, index) => (
