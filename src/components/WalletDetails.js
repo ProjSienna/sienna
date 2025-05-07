@@ -183,7 +183,6 @@ const WalletDetails = () => {
 
     try {
       const withdrawAmount = yieldInfo.maxWithdrawable.toFixed(2) || 0.00;
-      console.log("@@@", withdrawAmount);
       if (withdrawAmount <= yieldInfo.maxWithdrawable && withdrawAmount <= 0) {
         throw new Error('withdraw amount must be positive number and less than or equal to the max withdrawable amount');
       }
