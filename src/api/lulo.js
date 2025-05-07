@@ -19,5 +19,16 @@ export const lulo = {
   getAccount: async (owner) => {
     const response = await fetch(`${API_URL}/api/ext/lulo/account?owner=${owner}`);
     return response.json();
+  },
+
+  withdraw: async (owner, mintAddress, withdrawAmount) => {
+    const response = await fetch(`${API_URL}/api/ext/lulo/withdraw`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ owner, mintAddress, protectedAmount: withdrawAmount }),
+    });
+    return response.json();
   }
 };
