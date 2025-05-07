@@ -31,7 +31,8 @@ const WalletDetails = () => {
     },
     totalDeposited: 0,
     earnedInterest: 0,
-    projectedAnnualYield: 0
+    projectedAnnualYield: 0,
+    maxWithdrawable: 0,
   });
 
   useEffect(() => {
@@ -44,14 +45,39 @@ const WalletDetails = () => {
     fetchRates();
   }, []);
 
+  useEffect(() => {
+    if (publicKey) {
+      fetchAccountInfo();
+    }
+  }, [publicKey]);
+
 
   const fetchRates = async () => {
     const rates = await lulo.getRates();
-    const { protected: protectedRate } = rates;
+    
     setYieldInfo({
-      apy: protectedRate
+      ...yieldInfo,
+      apy: {
+        '1HR': rates['protected']['1HR'],
+        '7DAY': rates['protected']['7DAY'],
+        '24HR': rates['protected']['24HR'],
+        '30DAY': rates['protected']['30DAY'],
+        '1YR': rates['protected']['1YR'],
+        'CURRENT': rates['protected']['CURRENT'],
+      }
     });
   };
+
+  const fetchAccountInfo = async () => {
+    const accountInfo =await lulo.getAccount(publicKey.toString());
+    const maxWithdrawable = accountInfo['maxWithdrawable']['protected'][USDC_MINT];
+    setYieldInfo({
+      ...yieldInfo,
+      totalDeposited: accountInfo.totalUsdValue,
+      earnedInterest: accountInfo.totalInterestEarned,
+      maxWithdrawable: maxWithdrawable,
+    });
+  }
   
   const fetchBalances = async () => {
     if (!publicKey || !connection) return;
@@ -101,8 +127,8 @@ const WalletDetails = () => {
 
   const handleDepositConfirm = async () => {
     setShowDepositModal(false);
-    if (!publicKey || !connection) return;
     
+    if (!publicKey || !connection) return;
     setIsLoading(true);
     setError(null);
 
@@ -149,9 +175,54 @@ const WalletDetails = () => {
     }
   };
 
-  const handleWithdrawConfirm = () => {
+  const handleWithdrawConfirm = async () => {
     setShowWithdrawModal(false);
-    // TODO: Implement withdraw API call
+    if (!publicKey || !connection) return;
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const withdrawAmount = yieldInfo.maxWithdrawable.toFixed(2) || 0.00;
+      console.log("@@@", withdrawAmount);
+      if (withdrawAmount <= yieldInfo.maxWithdrawable && withdrawAmount <= 0) {
+        throw new Error('withdraw amount must be positive number and less than or equal to the max withdrawable amount');
+      }
+      
+      // Call backend API to get the transaction (serialized in base64)
+      const { transaction: serializedTx } = await lulo.withdraw(publicKey.toString(), USDC_MINT, withdrawAmount);
+      
+      // Decode base64 to Transaction object
+      const transactionBuffer = Buffer.from(serializedTx, 'base64');
+      const transaction = VersionedTransaction.deserialize(transactionBuffer);
+      
+      // Send transaction for wallet signing
+      const signature = await sendTransaction(transaction, connection, {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+        maxRetries: 5,
+      });
+        
+      // Wait for confirmation
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+      const confirmation = await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight
+      }, 'confirmed');
+
+      if (confirmation.value.err) {
+        throw new Error(`Transaction failed to confirm: ${JSON.stringify(confirmation.value.err)}`);
+      }
+
+      // console.log('Transaction confirmed:', signature);
+      setShowDepositModal(false);
+    } catch (err) {
+      console.error('Error during withdraw:', err);
+      setError(err.message || 'Transaction failed');
+    } finally {
+      setIsLoading(false);
+      await fetchBalances();
+    }
   };
 
   if (!publicKey) {
@@ -236,7 +307,7 @@ const WalletDetails = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500">Current APY</p>
-              <p className="text-xl font-bold text-primary">{yieldInfo.apy['CURRENT'].toFixed(2)}%</p>
+              <p className="text-xl font-bold text-primary">{yieldInfo.apy['CURRENT'].toFixed(2) || 0}%</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Total Deposited</p>
