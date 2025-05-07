@@ -18,13 +18,19 @@ import {
   FaPeopleArrows,
   FaRegClock,
   FaShieldAlt,
-  FaSatelliteDish
+  FaSatelliteDish,
+  FaPaperPlane,
+  FaBell,
+  FaCheckCircle
 } from 'react-icons/fa';
 
 const HomePage = () => {
   const { publicKey } = useWallet();
   const { transactions } = useTransactions();
   const [showRequestPayment, setShowRequestPayment] = useState(false);
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
 
   // Show recent transactions
   const recentTransactions = transactions.slice(0, 5);
@@ -39,6 +45,29 @@ const HomePage = () => {
 
   const handleRequestPayment = () => {
     setShowRequestPayment(true);
+  };
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    
+    try {
+      setSubscribing(true);
+      // Here you would normally call your API to add the email to your list
+      // For now, we'll simulate a successful API call with a timeout
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setSubscribed(true);
+      // Reset after 5 seconds
+      setTimeout(() => {
+        setSubscribed(false);
+        setEmail('');
+      }, 5000);
+    } catch (error) {
+      console.error('Subscription error:', error);
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   const features = [
@@ -126,6 +155,56 @@ const HomePage = () => {
                   <p className="text-gray-600">{feature.description}</p>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Newsletter Subscription */}
+          <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl py-12 px-6">
+            <div className="max-w-3xl mx-auto text-center">
+              <div className="flex justify-center mb-6">
+                <div className="bg-primary/20 p-3 rounded-full">
+                  <FaBell className="text-2xl text-primary" />
+                </div>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-3">
+                Stay Updated
+              </h2>
+              <p className="text-lg text-gray-600 mb-8">
+                Subscribe to our newsletter for the latest Sienna updates, feature releases, and payment tips
+              </p>
+              
+              {subscribed ? (
+                <div className="bg-green-50 text-green-700 p-4 rounded-lg max-w-md mx-auto flex items-center justify-center">
+                  <FaCheckCircle className="mr-2" /> Thanks for subscribing! We'll be in touch soon.
+                </div>
+              ) : (
+                <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="bg-primary text-white py-3 px-6 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
+                    disabled={subscribing}
+                  >
+                    {subscribing ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                        <span>Subscribing...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <FaPaperPlane className="mr-2" /> Subscribe
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
 
