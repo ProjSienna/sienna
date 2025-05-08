@@ -174,6 +174,102 @@ const HomePage = () => {
             </div>
           </div>
 
+          {/* API Documentation Section */}
+          <div className="mt-16">
+            <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+              Powerful API Integration
+            </h2>
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 shadow-md">
+              <div className="flex flex-col lg:flex-row gap-8">
+                {/* Left column - Code Example */}
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Simple Integration</h3>
+                  <p className="text-gray-600 mb-6">
+                    Our API makes it easy to add payment functionality to your applications. 
+                    Send payment requests, manage contacts, and track transactions.
+                  </p>
+                  <div className="bg-slate-800 text-gray-100 rounded-lg p-4 mb-4 overflow-x-auto relative text-sm">
+                    <span className="absolute top-2 right-3 text-xs text-gray-400">payment-request.js</span>
+                    <pre><code>{`// Send a payment request email with AI-enhanced content
+fetch('http://localhost:4000/api/email/payment-request', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'recipient@example.com',
+    name: 'Recipient Name',
+    amount: '100.00',
+    relationship: 'client',
+    context: 'Website design project',
+    senderName: 'Your Name',
+    paymentLink: 'https://sienna.app/pay/tx123456'
+  }),
+})`}</code></pre>
+                  </div>
+                  <div className="flex justify-end">
+                    <Link 
+                      to="/api" 
+                      className="flex items-center text-primary hover:text-secondary font-medium"
+                    >
+                      View full API documentation
+                      <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  </div>
+                </div>
+                
+                {/* Right column - AI Features */}
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                    <span className="inline-flex items-center bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-sm font-medium mr-2">AI-Enhanced</span>
+                    Smart Communication
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    Our API leverages artificial intelligence to optimize payment communications
+                    and maximize your payment success rates.
+                  </p>
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 bg-green-100 rounded-full p-1">
+                        <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h4 className="text-sm font-medium text-gray-800">Personalized Email Templates</h4>
+                        <p className="text-xs text-gray-500">AI adapts email content based on relationship and context</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 bg-green-100 rounded-full p-1">
+                        <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h4 className="text-sm font-medium text-gray-800">Smart Follow-ups</h4>
+                        <p className="text-xs text-gray-500">Optimal timing for payment reminders based on behavior patterns</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 bg-green-100 rounded-full p-1">
+                        <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h4 className="text-sm font-medium text-gray-800">Language Optimization</h4>
+                        <p className="text-xs text-gray-500">Content adjusted based on cultural context and relationship</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Newsletter Subscription */}
           <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl py-12 px-6">
             <div className="max-w-3xl mx-auto text-center">

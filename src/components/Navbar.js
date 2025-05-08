@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaUsers } from 'react-icons/fa';
+import { FaHome, FaUsers, FaCode } from 'react-icons/fa';
 import CustomWalletButton from './CustomWalletButton';
 
 const Navbar = () => {
@@ -38,6 +38,14 @@ const Navbar = () => {
               >
                 <FaUsers className="mr-2" /> Payroll
               </Link>
+              <Link
+                to="/api"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 ${
+                  isActive('/api') ? 'border-secondary' : 'border-transparent'
+                } ${isActive('/api')} hover:text-secondary transition-colors`}
+              >
+                <FaCode className="mr-2" /> API
+              </Link>
             </div>
           </div>
 
@@ -64,6 +72,13 @@ const Navbar = () => {
           >
             <FaUsers className="text-lg mb-1" />
             Payroll
+          </Link>
+          <Link
+            to="/api"
+            className={`flex flex-col items-center px-3 py-2 text-sm font-medium ${isActive('/api')} hover:text-secondary transition-colors`}
+          >
+            <FaCode className="text-lg mb-1" />
+            API
           </Link>
         </div>
       </div>

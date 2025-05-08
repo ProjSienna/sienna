@@ -10,6 +10,7 @@ import PayeesPage from './pages/PayeesPage';
 import PayrollPage from './pages/PayrollPage';
 import PaymentPage from './pages/PaymentPage';
 import PayRequestPage from './pages/PayRequestPage';
+import ApiPage from './pages/ApiPage';
 import { FaXTwitter } from 'react-icons/fa6';
 import './App.css';
 
@@ -30,6 +31,7 @@ function App() {
                     <Route path="/history" element={<PayeesPage initialTab="history" />} />
                     <Route path="/pay" element={<PaymentPage />} />
                     <Route path="/pay-request" element={<PayRequestPage />} />
+                    <Route path="/api" element={<ApiPage />} />
                   </Routes>
                 </main>
                 <footer className="bg-neutral py-8 mt-8 border-t border-primary border-opacity-20">
