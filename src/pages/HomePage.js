@@ -202,8 +202,7 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
     amount: '100.00',
     relationship: 'client',
     context: 'Website design project',
-    senderName: 'Your Name',
-    paymentLink: 'https://sienna.app/pay/tx123456'
+    senderName: 'Your Name'
   }),
 })`}</code></pre>
                   </div>
