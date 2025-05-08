@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { externalApi } from '../utils/api';
 import { PublicKey } from '@solana/web3.js';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 const PayeesContext = createContext();
 
@@ -22,6 +23,7 @@ const generateId = () => {
 };
 
 export const PayeesProvider = ({ children }) => {
+  const { publicKey } = useWallet();
   const [payees, setPayees] = useState(() => {
     // Initialize from localStorage if available
     const savedPayees = localStorage.getItem('payees');
@@ -64,7 +66,45 @@ export const PayeesProvider = ({ children }) => {
         createdAt: new Date().toISOString(),
       };
       
-      // Add to state
+      // Call the API to create the payee with user wallet information
+      if (publicKey) {
+        try {
+          const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+          const response = await fetch(`${apiUrl}/api/payees/with-user`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: newPayee.name,
+              wallet_address: newPayee.walletAddress,
+              user_wallet: publicKey.toString(),
+              email: newPayee.email || '',
+              description: newPayee.description || '',
+              category: newPayee.category || 'regular',
+              payment_frequency: newPayee.paymentFrequency || 'monthly',
+              amount: newPayee.amount || 0,
+              notes: newPayee.notes || ''
+            }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error('API error adding payee:', errorData);
+            throw new Error(errorData.message || 'Failed to add payee on server');
+          }
+
+          // Optionally get the response data if the API returns the created payee
+          const payeeData = await response.json();
+          console.log('Payee added successfully:', payeeData);
+        } catch (apiError) {
+          console.error('API call failed:', apiError);
+          // Continue with local storage even if API fails
+          console.log('Falling back to local storage only');
+        }
+      }
+      
+      // Add to state (local storage)
       const updatedPayees = [...payees, newPayeeWithId];
       setPayees(updatedPayees);
       

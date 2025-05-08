@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { usePayees } from '../contexts/PayeesContext';
 
 const PayeeForm = ({ payee = null, onSave, onCancel }) => {
-  const { addPayee, updatePayee } = usePayees();
+  const { addPayee, updatePayee, error: contextError } = usePayees();
   const [form, setForm] = useState({
     name: '',
     walletAddress: '',
@@ -14,6 +14,8 @@ const PayeeForm = ({ payee = null, onSave, onCancel }) => {
     notes: '',
   });
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState(null);
 
   useEffect(() => {
     if (payee) {
@@ -30,6 +32,13 @@ const PayeeForm = ({ payee = null, onSave, onCancel }) => {
     }
   }, [payee]);
 
+  // Update API error when context error changes
+  useEffect(() => {
+    if (contextError) {
+      setApiError(contextError);
+    }
+  }, [contextError]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({
@@ -43,6 +52,11 @@ const PayeeForm = ({ payee = null, onSave, onCancel }) => {
         ...errors,
         [name]: null,
       });
+    }
+    
+    // Clear API error when user makes changes
+    if (apiError) {
+      setApiError(null);
     }
   };
 
@@ -71,25 +85,41 @@ const PayeeForm = ({ payee = null, onSave, onCancel }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validate()) {
       return;
     }
     
-    const formattedPayee = {
-      ...form,
-      amount: form.amount ? Number(form.amount) : null,
-    };
+    setIsSubmitting(true);
+    setApiError(null);
     
-    if (payee) {
-      updatePayee(payee.id, formattedPayee);
-    } else {
-      addPayee(formattedPayee);
+    try {
+      const formattedPayee = {
+        ...form,
+        amount: form.amount ? Number(form.amount) : null,
+      };
+      
+      let result;
+      if (payee) {
+        result = await updatePayee(payee.id, formattedPayee);
+      } else {
+        result = await addPayee(formattedPayee);
+      }
+      
+      if (result) {
+        onSave?.(formattedPayee);
+      } else {
+        // If the function returned false, there was an error
+        setApiError(contextError || 'Failed to save payee. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error saving payee:', error);
+      setApiError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    onSave?.(formattedPayee);
   };
 
   return (
@@ -97,6 +127,12 @@ const PayeeForm = ({ payee = null, onSave, onCancel }) => {
       <h2 className="text-2xl font-semibold mb-4 text-primary">
         {payee ? 'Edit Payee' : 'Add New Payee'}
       </h2>
+      
+      {apiError && (
+        <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg">
+          <p>{apiError}</p>
+        </div>
+      )}
       
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -239,7 +275,7 @@ const PayeeForm = ({ payee = null, onSave, onCancel }) => {
             onChange={handleChange}
             rows="3"
             className="w-full p-2 border border-gray-300 rounded-lg"
-            placeholder="Additional notes about this payee"
+            placeholder="Additional notes"
           ></textarea>
         </div>
         
@@ -253,9 +289,17 @@ const PayeeForm = ({ payee = null, onSave, onCancel }) => {
           </button>
           <button
             type="submit"
-            className="px-4 py-2 text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+            className="px-4 py-2 text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors flex items-center"
+            disabled={isSubmitting}
           >
-            {payee ? 'Update Payee' : 'Add Payee'}
+            {isSubmitting ? (
+              <>
+                <span className="mr-2">Saving</span>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              </>
+            ) : (
+              'Save Payee'
+            )}
           </button>
         </div>
       </form>

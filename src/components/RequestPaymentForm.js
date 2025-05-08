@@ -3,6 +3,8 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { usePayees } from '../contexts/PayeesContext';
 import { FaTimes, FaCopy, FaCheck, FaSearch, FaPlusCircle, FaArrowRight, FaEnvelope, FaChevronLeft } from 'react-icons/fa';
 import Confetti from 'react-confetti';
+import CryptoJS from 'crypto-js'; // We'll use this for encryption
+import { Link } from 'react-router-dom';
 
 const RequestPaymentForm = ({ onClose }) => {
   const { publicKey } = useWallet();
@@ -16,13 +18,14 @@ const RequestPaymentForm = ({ onClose }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPayee, setSelectedPayee] = useState(null);
   const [filteredPayees, setFilteredPayees] = useState([]);
-  const [isNewRecipient, setIsNewRecipient] = useState(false);
+  const [isnewRequestRecipient, setIsnewRequestRecipient] = useState(false);
   
   // New recipient information
-  const [newRecipient, setNewRecipient] = useState({
+  const [newRequestRecipient, setNewRequestRecipient] = useState({
     name: '',
     email: '',
     relationship: 'business',
+    walletAddress: '',
   });
   
   // Payment request details
@@ -35,6 +38,12 @@ const RequestPaymentForm = ({ onClose }) => {
   const [copied, setCopied] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailError, setEmailError] = useState(null);
+  const [addingPayee, setAddingPayee] = useState(false);
+  const [payeeError, setPayeeError] = useState(null);
+  const [creatingTransaction, setCreatingTransaction] = useState(false);
+  const [transactionError, setTransactionError] = useState(null);
+  const [paymentId, setPaymentId] = useState(null);
+  const [senderName, setSenderName] = useState('');
 
   // Scroll to top when step changes
   useEffect(() => {
@@ -50,7 +59,7 @@ const RequestPaymentForm = ({ onClose }) => {
         payee => 
           payee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           payee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          payee.walletAddress.toLowerCase().includes(searchTerm.toLowerCase())
+          payee.walletAddress?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredPayees(filtered);
     } else {
@@ -64,62 +73,183 @@ const RequestPaymentForm = ({ onClose }) => {
 
   const handleSelectPayee = (payee) => {
     setSelectedPayee(payee);
-    setIsNewRecipient(false);
+    setIsnewRequestRecipient(false);
     setStep(2);
   };
 
-  const handleNewRecipient = () => {
+  const handlenewRequestRecipient = () => {
     setSelectedPayee(null);
-    setIsNewRecipient(true);
+    setIsnewRequestRecipient(true);
     setStep(2);
   };
 
-  const handleNewRecipientChange = (e) => {
+  const handlenewRequestRecipientChange = (e) => {
     const { name, value } = e.target;
-    setNewRecipient({
-      ...newRecipient,
+    setNewRequestRecipient({
+      ...newRequestRecipient,
       [name]: value
     });
+    // Clear any error when user makes changes
+    if (payeeError) {
+      setPayeeError(null);
+    }
   };
 
   const handleGoBack = () => {
     if (step === 2) {
       setSelectedPayee(null);
-      setIsNewRecipient(false);
+      setIsnewRequestRecipient(false);
     }
     setStep(step - 1);
   };
 
-  const handleSubmitDetails = (e) => {
+  // Function to encrypt the payment ID
+  const encryptPaymentId = (id) => {
+    // Use a simple encryption to make it harder to guess/manipulate
+    // In production, you'd want to use a secure key from environment variables
+    const secretKey = 'sienna-payment-secret-key';
+    return CryptoJS.AES.encrypt(id.toString(), secretKey).toString();
+  };
+
+  // Function to create a transaction record in the database
+  const createTransactionRecord = async () => {
+    if (!publicKey) return null;
+    
+    try {
+      setCreatingTransaction(true);
+      setTransactionError(null);
+      
+      const recipient = selectedPayee || newRequestRecipient;
+      
+      if (!recipient.email) {
+        throw new Error("Recipient email is required");
+      }
+      
+      // Format request body to match the API example
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${apiUrl}/api/transactions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: amount,
+          recipient_wallet: recipient.walletAddress || '',
+          recipient_name: recipient.name,
+          recipient_email: recipient.email,
+          sender_wallet: publicKey.toString(),
+          memo: description,
+          status: 'requested' // Set status to requested
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create transaction record');
+      }
+
+      // Get the payment ID from the response
+      const transactionData = await response.json();
+      console.log('Transaction record created:', transactionData);
+      
+      // Return the exact ID as shown in the example
+      return transactionData.id; 
+    } catch (error) {
+      console.error('Error creating transaction record:', error);
+      setTransactionError(error.message || 'Failed to create transaction record');
+      return null;
+    } finally {
+      setCreatingTransaction(false);
+    }
+  };
+
+  // Function to add a contact to the database
+  const addContactToDb = async (recipient) => {
+    if (!publicKey) return true; // Return success if no wallet connected
+    
+    // If the recipient doesn't have a wallet or email, don't try to add them
+    if (!recipient.walletAddress && !recipient.email) {
+      console.log('No wallet or email provided, skipping contact creation');
+      return true;
+    }
+    
+    try {
+      setAddingPayee(true);
+      
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${apiUrl}/api/user-contacts/user/wallet`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: recipient.name,
+          email: recipient.email || '',
+          wallet_address: recipient.walletAddress || '',
+          user_wallet: publicKey.toString()
+        }),
+      });
+
+      // Consider anything in the 2xx range a success
+      if (response.status >= 200 && response.status < 300) {
+        console.log('Successfully added contact to database');
+        return true;
+      }
+      
+      // For 4xx client errors, the contact might already exist
+      if (response.status >= 400 && response.status < 500) {
+        console.log('Contact may already exist or have validation issues');
+        return true; // Still consider this a success to avoid disrupting the flow
+      }
+
+      // Only throw for server errors (5xx)
+      if (response.status >= 500) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Server error when adding contact');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error adding contact to database:', error);
+      // Don't set the error state to avoid showing the error message to the user
+      // setPayeeError(error.message || 'Failed to add contact to database');
+      return true; // Return true anyway to not block the payment request flow
+    } finally {
+      setAddingPayee(false);
+    }
+  };
+
+  const handleSubmitDetails = async (e) => {
     e.preventDefault();
-    setStep(3);
+    
+    // Create a transaction record and get payment ID
+    const paymentIdFromAPI = await createTransactionRecord();
+    setPaymentId(paymentIdFromAPI);
+    
+    // If we couldn't create a transaction record, show error but continue
+    if (!paymentIdFromAPI) {
+      console.warn('Could not create transaction record. Continuing without payment ID.');
+    }
     
     // Generate a payment link that points to the pay-request page
     const baseUrl = process.env.REACT_APP_FRONTEND_URL || window.location.origin;
-    const recipient = selectedPayee || newRecipient;
+    const recipient = selectedPayee || newRequestRecipient;
     
-    // Create the data object that matches the PayRequestPage expected format
-    const requestData = {
-      sender: {
-        wallet: publicKey ? publicKey.toString() : 'Unknown'
-      },
-      recipient: {
-        name: recipient.name,
-        email: recipient.email,
-        wallet: selectedPayee?.walletAddress || ''
-      },
-      request: {
-        amount: amount,
-        description: description,
-        dueDate: dueDate || '',
-        relationship: selectedPayee?.category || newRecipient.relationship,
-        timestamp: new Date().toISOString()
-      }
-    };
+    // Add the contact to DB using the new API endpoint
+    addContactToDb(recipient);
     
-    // Generate the final payment link
-    const generatedLink = `${baseUrl}/pay-request?data=${encodeURIComponent(JSON.stringify(requestData))}`;
+    // Generate payment link with the raw payment ID as requested
+    let generatedLink;
+    if (paymentIdFromAPI) {
+      // Use the payment ID directly in the URL
+      generatedLink = `${baseUrl}/pay-request?id=${paymentIdFromAPI}`;
+    } else {
+      // Fallback link without payment ID
+      generatedLink = `${baseUrl}/pay-request?amount=${amount}&recipient=${encodeURIComponent(recipient.email)}`;
+    }
+    
     setPaymentLink(generatedLink);
+    setStep(3);
   };
 
   const handleCopyLink = () => {
@@ -130,27 +260,37 @@ const RequestPaymentForm = ({ onClose }) => {
 
   const handleSendEmail = async () => {
     try {
+      if (!paymentLink) {
+        throw new Error('Payment link is not available');
+      }
+
       setSendingEmail(true);
       setEmailError(null);
+
+      // Get the recipient details
+      const recipient = selectedPayee || newRequestRecipient;
       
-      const recipient = selectedPayee || newRecipient;
-      
-      // Format the email data to match the expected API format
+      // Format the email data according to the API requirements
       const emailData = {
-        email: recipient.email,
-        name: recipient.name,
-        recipientWallet: selectedPayee?.walletAddress || '',
-        amount: parseFloat(amount),
-        relationship: selectedPayee?.category || newRecipient.relationship,
-        senderName: publicKey ? `${publicKey.toString().slice(0, 6)}...` : 'Sienna User',
-        context: description,
-        senderEmail: senderEmail,
+        recipientEmail: recipient.email,
+        recipientName: recipient.name,
+        recipientWallet: recipient.walletAddress || '',
+        amount: amount,
+        relationship: recipient.category || recipient.relationship || 'colleague',
+        senderName: senderName || 'A colleague',
+        context: description || 'Payment request',
+        senderEmail: senderEmail || '',
         paymentLink: paymentLink
       };
+
+      // Add the transaction ID if available
+      if (paymentId) {
+        emailData.transactionId = paymentId;
+      }
       
       console.log('Sending email data:', emailData);
       
-      // Call the backend API
+      // Make the API call to send the email
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
       const response = await fetch(`${apiUrl}/api/email/payment-request`, {
         method: 'POST',
@@ -159,18 +299,17 @@ const RequestPaymentForm = ({ onClose }) => {
         },
         body: JSON.stringify(emailData),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to send email');
       }
-      
+
       setEmailSent(true);
-      // Move to success step
       setStep(4);
     } catch (error) {
       console.error('Error sending email:', error);
-      setEmailError(error.message || 'Failed to send email. Please try again.');
+      setEmailError(error.message || 'Failed to send email');
     } finally {
       setSendingEmail(false);
     }
@@ -225,7 +364,7 @@ const RequestPaymentForm = ({ onClose }) => {
         <button
           type="button"
           className="w-full py-3 border border-dashed border-gray-300 rounded-lg text-primary hover:bg-gray-50 flex items-center justify-center"
-          onClick={handleNewRecipient}
+          onClick={handlenewRequestRecipient}
         >
           <FaPlusCircle className="mr-2" />
           New Recipient
@@ -245,7 +384,13 @@ const RequestPaymentForm = ({ onClose }) => {
         <FaChevronLeft className="mr-1" /> Back to search
       </button>
       
-      {isNewRecipient ? (
+      {payeeError && (
+        <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg">
+          <p className="text-sm">{payeeError}</p>
+        </div>
+      )}
+      
+      {isnewRequestRecipient ? (
         // New recipient form
         <div className="space-y-4 border-b border-gray-200 pb-4">
           <h3 className="text-lg font-medium text-gray-800">New Recipient Details</h3>
@@ -257,8 +402,8 @@ const RequestPaymentForm = ({ onClose }) => {
             <input
               type="text"
               name="name"
-              value={newRecipient.name}
-              onChange={handleNewRecipientChange}
+              value={newRequestRecipient.name}
+              onChange={handlenewRequestRecipientChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="Recipient's name"
               required
@@ -272,8 +417,8 @@ const RequestPaymentForm = ({ onClose }) => {
             <input
               type="email"
               name="email"
-              value={newRecipient.email}
-              onChange={handleNewRecipientChange}
+              value={newRequestRecipient.email}
+              onChange={handlenewRequestRecipientChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               placeholder="Recipient's email"
               required
@@ -282,12 +427,29 @@ const RequestPaymentForm = ({ onClose }) => {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
+              Wallet Address (Optional)
+            </label>
+            <input
+              type="text"
+              name="walletAddress"
+              value={newRequestRecipient.walletAddress}
+              onChange={handlenewRequestRecipientChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              placeholder="Solana wallet address"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              If provided, this payee will be added to your contacts
+            </p>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Relationship
             </label>
             <select
               name="relationship"
-              value={newRecipient.relationship}
-              onChange={handleNewRecipientChange}
+              value={newRequestRecipient.relationship}
+              onChange={handlenewRequestRecipientChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="business">Business</option>
@@ -361,6 +523,20 @@ const RequestPaymentForm = ({ onClose }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
+              Your Name*
+            </label>
+            <input
+              type="text"
+              value={senderName}
+              onChange={(e) => setSenderName(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              placeholder="Your name"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Due Date (Optional)
             </label>
             <input
@@ -391,6 +567,13 @@ const RequestPaymentForm = ({ onClose }) => {
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm text-gray-600">Payment request created successfully!</p>
         </div>
+        
+        {transactionError && (
+          <div className="mb-4 bg-orange-50 text-orange-700 p-2 rounded-lg text-sm">
+            <p className="break-words">Transaction warning: {transactionError}</p>
+            <p className="text-xs mt-1">You can still send the payment request, but tracking might be limited.</p>
+          </div>
+        )}
         
         {emailError && (
           <div className="mb-4 bg-red-50 text-red-700 p-2 rounded-lg text-sm">
@@ -426,8 +609,13 @@ const RequestPaymentForm = ({ onClose }) => {
         <div className="bg-gray-50 p-4 rounded-lg space-y-3">
           <div className="border-b border-gray-200 pb-2">
             <p className="text-sm text-gray-500">To</p>
-            <p className="font-medium break-words">{selectedPayee?.name || newRecipient.name}</p>
-            <p className="text-sm text-gray-600 break-words">{selectedPayee?.email || newRecipient.email}</p>
+            <p className="font-medium break-words">{selectedPayee?.name || newRequestRecipient.name}</p>
+            <p className="text-sm text-gray-600 break-words">{selectedPayee?.email || newRequestRecipient.email}</p>
+            {(selectedPayee?.walletAddress || newRequestRecipient.walletAddress) && (
+              <p className="text-xs text-gray-500 font-mono break-all mt-1">
+                Wallet: {selectedPayee?.walletAddress || newRequestRecipient.walletAddress}
+              </p>
+            )}
           </div>
           
           <p className="text-sm">
@@ -441,7 +629,6 @@ const RequestPaymentForm = ({ onClose }) => {
               <span className="font-medium">Due Date:</span> {new Date(dueDate).toLocaleDateString()}
             </p>
           )}
-          
           <p className="text-xs text-gray-500 mt-2">
             Requested on {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}
           </p>
@@ -453,26 +640,27 @@ const RequestPaymentForm = ({ onClose }) => {
           onClick={() => {
             setStep(1);
             setSelectedPayee(null);
-            setIsNewRecipient(false);
+            setIsnewRequestRecipient(false);
             setAmount('');
             setDescription('');
             setDueDate('');
             setPaymentLink('');
             setEmailSent(false);
+            setPaymentId(null);
           }}
           className="py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
         >
           Create New Request
         </button>
         <button
-          onClick={sendingEmail ? null : handleSendEmail}
+          onClick={sendingEmail || addingPayee || creatingTransaction ? null : handleSendEmail}
           className="py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
-          disabled={sendingEmail}
+          disabled={sendingEmail || addingPayee || creatingTransaction}
         >
-          {sendingEmail ? (
+          {sendingEmail || addingPayee || creatingTransaction ? (
             <div className="flex items-center">
               <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-              Sending...
+              {creatingTransaction ? "Creating Transaction..." : addingPayee ? "Adding Contact..." : "Sending..."}
             </div>
           ) : (
             'Submit Request'
@@ -484,7 +672,8 @@ const RequestPaymentForm = ({ onClose }) => {
 
   // Add a new step 4 component for success with confetti
   const renderStep4 = () => (
-    <div className="space-y-6">
+    <div className="mt-8 bg-white shadow-lg rounded-lg p-6 max-w-lg mx-auto">
+      {/* Add confetti animation */}
       <Confetti 
         width={window.innerWidth}
         height={window.innerHeight}
@@ -494,80 +683,51 @@ const RequestPaymentForm = ({ onClose }) => {
       />
       
       <div className="text-center">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <FaCheck className="text-green-500 text-2xl" />
+        <div className="flex justify-center mb-4">
+          <div className="bg-green-100 p-3 rounded-full">
+            <svg className="h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
         </div>
         <h3 className="text-2xl font-bold text-gray-800 mb-2">Payment Request Sent!</h3>
         <p className="text-gray-600 mb-6">
-          Your payment request has been sent to {(selectedPayee || newRecipient)?.name} ({(selectedPayee || newRecipient)?.email})
+          Your payment request has been successfully sent to {(selectedPayee || newRequestRecipient).name}.
         </p>
-      </div>
-      
-      <div className="border border-gray-200 rounded-lg p-4 mb-6">
-        <h4 className="font-medium text-gray-700 mb-2">Payment Link</h4>
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={paymentLink}
-            readOnly
-            className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-sm font-mono truncate"
-          />
-          <button
-            onClick={handleCopyLink}
-            className="shrink-0 p-3 text-primary hover:text-primary/90 transition-colors"
-            title="Copy link"
+        
+        {paymentId && (
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+            <h4 className="font-semibold text-blue-800 mb-2">Transaction Details</h4>
+            <p className="text-sm text-gray-700 mb-1">Transaction ID: <span className="font-mono bg-blue-100 px-2 py-1 rounded">{paymentId}</span></p>
+            <p className="text-sm text-gray-600">This transaction is now being tracked with status: <span className="font-semibold text-blue-700">Requested</span></p>
+          </div>
+        )}
+        
+        <div className="flex flex-col space-y-4">
+          <button 
+            onClick={() => {
+              setStep(1);
+              setSelectedPayee(null);
+              setIsnewRequestRecipient(false);
+              setAmount('');
+              setDescription('');
+              setDueDate('');
+              setPaymentLink('');
+              setEmailSent(false);
+              setEmailError(null);
+              setPaymentId(null);
+            }}
+            className="w-full py-3 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
-            {copied ? <FaCheck /> : <FaCopy />}
+            Request Another Payment
           </button>
+          <Link 
+            to="/history" 
+            className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-center"
+          >
+            View Payment History
+          </Link>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
-          You can also share this link directly with {(selectedPayee || newRecipient)?.name}
-        </p>
-      </div>
-      
-      <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
-        <h4 className="font-medium text-blue-700 mb-2">Payment Details</h4>
-        <ul className="space-y-2">
-          <li className="flex justify-between">
-            <span className="text-blue-600">Amount:</span>
-            <span className="font-medium">{amount} USDC</span>
-          </li>
-          <li className="flex justify-between">
-            <span className="text-blue-600">Description:</span>
-            <span>{description}</span>
-          </li>
-          {dueDate && (
-            <li className="flex justify-between">
-              <span className="text-blue-600">Due Date:</span>
-              <span>{new Date(dueDate).toLocaleDateString()}</span>
-            </li>
-          )}
-        </ul>
-      </div>
-      
-      <div className="flex flex-col sm:flex-row gap-3">
-        <button
-          onClick={() => {
-            setStep(1);
-            setSelectedPayee(null);
-            setIsNewRecipient(false);
-            setAmount('');
-            setDescription('');
-            setDueDate('');
-            setPaymentLink('');
-            setEmailSent(false);
-            setEmailError(null);
-          }}
-          className="py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          Create New Request
-        </button>
-        <button
-          onClick={onClose}
-          className="py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          Done
-        </button>
       </div>
     </div>
   );
