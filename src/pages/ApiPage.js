@@ -226,8 +226,11 @@ print(response.json())`
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Response</h3>
               <pre className="bg-gray-50 p-4 rounded-md overflow-x-auto text-sm">
                 <code className="language-json">{`{
-  "success": true,
   "message": "Payment request email sent successfully",
+  "aiContent": {
+    "subject": "Friendly Reminder: Payment for Your Website Design Project 💻✨",
+    "message": "Hi there! Just a quick and friendly reminder to settle the $100.00 USDC for your website design project. Looking forward to seeing your amazing site come to life! 😊🚀",
+  },
   "data": {
     "id": "bf225204-ea42-4fe2-b7db-4c7a5385da36",
     "sentAt": "2023-08-10T14:25:16.253Z",
