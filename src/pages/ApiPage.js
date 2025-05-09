@@ -117,9 +117,6 @@ print(response.json())`
               <div className="bg-white p-3 rounded border border-blue-200 font-mono text-sm mb-3">
                 https://api.projectsienna.xyz
               </div>
-              <p className="text-sm text-blue-700">
-                Set <code className="bg-blue-100 px-1 py-0.5 rounded">REACT_APP_API_URL</code> in your environment variables to use a different URL for development.
-              </p>
             </div>
           </div>
         </div>
