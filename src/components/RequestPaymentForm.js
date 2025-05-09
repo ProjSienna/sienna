@@ -223,7 +223,7 @@ const RequestPaymentForm = ({ onClose }) => {
     e.preventDefault();
     
     // Create a transaction record and get payment ID
-    const paymentIdFromAPI = await createTransactionRecord();
+    const paymentIdFromAPI = '';//await createTransactionRecord();
     setPaymentId(paymentIdFromAPI);
     
     // If we couldn't create a transaction record, show error but continue
@@ -245,7 +245,7 @@ const RequestPaymentForm = ({ onClose }) => {
       generatedLink = `${baseUrl}/pay-request?id=${paymentIdFromAPI}`;
     } else {
       // Fallback link without payment ID
-      generatedLink = `${baseUrl}/pay-request?amount=${amount}&recipient=${encodeURIComponent(recipient.email)}`;
+      generatedLink = `${baseUrl}/pay-request?amount=${amount}&recipient=${encodeURIComponent(recipient.email)}${recipient.walletAddress ? '&wallet=' + encodeURIComponent(recipient.walletAddress) : ''}`;
     }
     
     setPaymentLink(generatedLink);
@@ -264,6 +264,7 @@ const RequestPaymentForm = ({ onClose }) => {
         throw new Error('Payment link is not available');
       }
 
+      console.log('paymentLink', paymentLink);
       setSendingEmail(true);
       setEmailError(null);
 
@@ -272,15 +273,15 @@ const RequestPaymentForm = ({ onClose }) => {
       
       // Format the email data according to the API requirements
       const emailData = {
-        recipientEmail: recipient.email,
-        recipientName: recipient.name,
+        email: recipient.email,
+        name: recipient.name,
         recipientWallet: recipient.walletAddress || '',
         amount: amount,
         relationship: recipient.category || recipient.relationship || 'colleague',
-        senderName: senderName || 'A colleague',
         context: description || 'Payment request',
+        senderName: senderName || 'A colleague',
         senderEmail: senderEmail || '',
-        paymentLink: paymentLink
+        dueDate: dueDate || ''
       };
 
       // Add the transaction ID if available
