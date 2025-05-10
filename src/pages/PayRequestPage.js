@@ -5,37 +5,78 @@ import { FaRegLightbulb, FaArrowRight, FaMoneyBillWave, FaCalendarAlt, FaInfoCir
 import CustomWalletButton from '../components/CustomWalletButton';
 import Confetti from 'react-confetti';
 
-// Utility function to extract and parse data from URL
+// Updated utility hook to fetch transaction data using the ID from URL
 const usePaymentRequestData = () => {
   const location = useLocation();
   const [paymentData, setPaymentData] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const params = new URLSearchParams(location.search);
-      const encodedData = params.get('data');
-      
-      if (!encodedData) {
-        setError('No payment request data found');
-        return;
+    const fetchTransactionData = async () => {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams(location.search);
+        const transactionId = params.get('id');
+        
+        if (!transactionId) {
+          setError('No payment request ID found');
+          setLoading(false);
+          return;
+        }
+        
+        // Fetch the transaction data from the API
+        const apiUrl = process.env.REACT_APP_API_URL || 'https://api.projectsienna.xyz';
+        const response = await fetch(`${apiUrl}/api/transactions/${transactionId}`);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch transaction details');
+        }
+        
+        const transactionData = await response.json();
+        
+        // Format the data as needed for the UI
+        const formattedData = {
+          sender: {
+            name: transactionData.sender_name || 'Sender',
+            wallet: transactionData.sender_wallet || '',
+            email: transactionData.sender_email || ''
+          },
+          recipient: {
+            name: transactionData.recipient_name || 'Recipient',
+            wallet: transactionData.recipient_wallet || '',
+            email: transactionData.recipient_email || ''
+          },
+          request: {
+            amount: transactionData.amount || '0',
+            description: transactionData.memo || 'Payment request',
+            dueDate: transactionData.due_date || null,
+            id: transactionData.id
+          }
+        };
+        
+        console.log('debug: ', formattedData);
+        
+        setPaymentData(formattedData);
+      } catch (err) {
+        console.error('Error fetching transaction data:', err);
+        setError(err.message || 'Failed to fetch payment details');
+      } finally {
+        setLoading(false);
       }
-      
-      const decodedData = JSON.parse(decodeURIComponent(encodedData));
-      setPaymentData(decodedData);
-    } catch (err) {
-      console.error('Error parsing payment request data:', err);
-      setError('Invalid payment request format');
-    }
+    };
+
+    fetchTransactionData();
   }, [location]);
 
-  return { paymentData, error };
+  return { paymentData, error, loading };
 };
 
 const PayRequestPage = () => {
   const navigate = useNavigate();
   const { connected } = useWallet();
-  const { paymentData, error } = usePaymentRequestData();
+  const { paymentData, error, loading } = usePaymentRequestData();
   const [step, setStep] = useState(1);
   const [showConfetti, setShowConfetti] = useState(false);
   const [readyToPay, setReadyToPay] = useState(false);
@@ -70,7 +111,7 @@ const PayRequestPage = () => {
     );
   }
 
-  if (!paymentData) {
+  if (loading || !paymentData) {
     return (
       <div className="max-w-lg mx-auto my-12 px-6">
         <div className="bg-white rounded-xl shadow-lg p-8 text-center">
@@ -103,7 +144,7 @@ const PayRequestPage = () => {
   };
 
   if (readyToPay) {
-    // When ready to pay, redirect to the payment form with the data
+    // When ready to pay, redirect to the payment form with the transaction ID
     return (
       <div className="max-w-3xl mx-auto my-12 px-6">
         <div className="bg-white rounded-xl shadow-lg p-8">
@@ -115,7 +156,7 @@ const PayRequestPage = () => {
           </p>
           <div className="text-center">
             <button
-              onClick={() => navigate(`/payment?data=${encodeURIComponent(JSON.stringify(paymentData))}`)}
+              onClick={() => navigate(`/payment?id=${request.id}`)}
               className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
             >
               Continue to Payment
@@ -154,9 +195,12 @@ const PayRequestPage = () => {
                   <div className="text-5xl font-bold text-primary mb-2 animate-pulse">
                     {formattedAmount} <span className="text-3xl">USDC</span>
                   </div>
-                  <p className="text-gray-600">
-                    From: {sender.wallet.slice(0, 6)}...{sender.wallet.slice(-4)}
-                  </p>
+                  {sender.wallet && (
+                    <p className="text-gray-600">
+                      From: {sender.wallet.slice(0, 6)}...{sender.wallet.slice(-4)}
+                    </p>
+                  )}
+                  {sender.name && <p className="text-gray-600 font-medium mt-2">{sender.name}</p>}
                 </div>
                 
                 {/* Payment Details */}
@@ -180,6 +224,11 @@ const PayRequestPage = () => {
                       <div>{formattedDueDate}</div>
                     </div>
                   )}
+                  
+                  <div className="flex justify-between items-center">
+                    <div className="font-medium text-gray-700">Transaction ID</div>
+                    <div className="font-mono text-sm">{request.id}</div>
+                  </div>
                 </div>
                 
                 {/* Fun Tips */}

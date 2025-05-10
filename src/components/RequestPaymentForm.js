@@ -281,19 +281,20 @@ const RequestPaymentForm = ({ onClose }) => {
         context: description || 'Payment request',
         senderName: senderName || 'A colleague',
         senderEmail: senderEmail || '',
-        senderWallet: publicKey.toString(),
+        senderWallet: publicKey ? publicKey.toString() : '',
         dueDate: dueDate || ''
       };
 
       // Add the transaction ID if available
       if (paymentId) {
+        emailData.transactionId = paymentId;
         emailData.paymentLink = paymentLink;
       }
       
       console.log('Sending email data:', emailData);
       
       // Make the API call to send the email
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://api.projectsienna.xyz';
       const response = await fetch(`${apiUrl}/api/email/payment-request`, {
         method: 'POST',
         headers: {
