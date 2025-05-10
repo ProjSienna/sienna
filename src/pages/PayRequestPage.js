@@ -1,9 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { FaRegLightbulb, FaArrowRight, FaMoneyBillWave, FaCalendarAlt, FaInfoCircle, FaWallet, FaArrowLeft } from 'react-icons/fa';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { 
+  FaRegLightbulb, 
+  FaArrowRight, 
+  FaMoneyBillWave, 
+  FaCalendarAlt, 
+  FaInfoCircle, 
+  FaWallet, 
+  FaArrowLeft,
+  FaCheckCircle,
+  FaSpinner
+} from 'react-icons/fa';
 import CustomWalletButton from '../components/CustomWalletButton';
 import Confetti from 'react-confetti';
+import { sendUSDC } from '../utils/solana';
+import { useTransactions } from '../contexts/TransactionsContext';
 
 // Updated utility hook to fetch transaction data using the ID from URL
 const usePaymentRequestData = () => {
@@ -75,11 +87,16 @@ const usePaymentRequestData = () => {
 
 const PayRequestPage = () => {
   const navigate = useNavigate();
-  const { connected } = useWallet();
+  const { publicKey, connected, sendTransaction } = useWallet();
+  const { connection } = useConnection();
   const { paymentData, error, loading } = usePaymentRequestData();
+  const { addTransaction } = useTransactions();
   const [step, setStep] = useState(1);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [readyToPay, setReadyToPay] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
+  const [transactionSignature, setTransactionSignature] = useState(null);
 
   // Show confetti animation when the component mounts
   useEffect(() => {
@@ -89,6 +106,117 @@ const PayRequestPage = () => {
       return () => clearTimeout(timer);
     }
   }, [paymentData, error]);
+
+  // Show confetti on successful payment
+  useEffect(() => {
+    if (paymentSuccess) {
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [paymentSuccess]);
+
+  const handleContinue = () => {
+    setStep(2);
+  };
+
+  const handleMakePayment = async () => {
+    if (!connected || !publicKey) {
+      alert('Please connect your wallet to continue');
+      return;
+    }
+
+    if (!paymentData.recipient.wallet) {
+      setPaymentError('Recipient wallet address is missing');
+      return;
+    }
+
+    try {
+      setProcessing(true);
+      setPaymentError(null);
+
+      // Parse amount
+      const amount = parseFloat(paymentData.request.amount);
+      
+      // Create transaction using our utility function
+      const tx = await sendUSDC({
+        connection,
+        fromWallet: publicKey,
+        toWallet: paymentData.recipient.wallet,
+        amount: amount,
+      });
+
+      // Send transaction
+      const signature = await sendTransaction(tx, connection, {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+        maxRetries: 5,
+      });
+      console.log('Transaction sent with signature', signature);
+      
+      // Wait for confirmation
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+      const confirmation = await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight
+      }, 'confirmed');
+
+      // Check if transaction had any errors
+      if (confirmation.value.err) {
+        throw new Error(`Transaction failed to confirm: ${JSON.stringify(confirmation.value.err)}`);
+      }
+      
+      console.log('Transaction confirmed successfully');
+      setTransactionSignature(signature);
+
+      // Add to transaction history
+      addTransaction({
+        amount: amount,
+        memo: paymentData.request.description || `Payment to ${paymentData.recipient.name}`,
+        recipientName: paymentData.recipient.name,
+        recipientWallet: paymentData.recipient.wallet,
+        senderWallet: publicKey.toString(),
+        signature,
+        timestamp: new Date().toISOString(),
+        type: 'outgoing'
+      });
+
+      // Update the payment status in the API
+      await updatePaymentStatus(paymentData.request.id, 'paid', signature);
+
+      setPaymentSuccess(true);
+      setStep(3);
+    } catch (err) {
+      console.error('Payment error:', err);
+      setPaymentError(err.message || 'Failed to complete payment');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // Function to update the payment status in the backend
+  const updatePaymentStatus = async (transactionId, status, signature) => {
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://api.projectsienna.xyz';
+      const response = await fetch(`${apiUrl}/api/transactions/${transactionId}/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status,
+          blockchain_tx_id: signature,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to update payment status');
+      }
+    } catch (err) {
+      console.error('Error updating payment status:', err);
+    }
+  };
 
   if (error) {
     return (
@@ -135,31 +263,48 @@ const PayRequestPage = () => {
     day: 'numeric'
   }) : null;
 
-  const handleContinue = () => {
-    setStep(2);
-  };
-
-  const startPayment = () => {
-    setReadyToPay(true);
-  };
-
-  if (readyToPay) {
-    // When ready to pay, redirect to the payment form with the transaction ID
+  // Payment success view
+  if (paymentSuccess) {
     return (
       <div className="max-w-3xl mx-auto my-12 px-6">
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-center mb-6">
-            Proceeding to Payment...
-          </h2>
-          <p className="text-center mb-8">
-            Redirecting you to the payment form. If nothing happens, click the button below.
+        {showConfetti && <Confetti recycle={false} numberOfPieces={300} />}
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="w-20 h-20 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FaCheckCircle className="text-primary text-4xl" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Payment Successful!</h2>
+          <p className="text-gray-600 mb-6">
+            You have successfully sent {formattedAmount} USDC to {recipient.name}
           </p>
-          <div className="text-center">
+          
+          <div className="bg-gray-50 rounded-lg p-4 mb-8 text-left">
+            <h3 className="font-semibold text-gray-800 mb-2">Transaction Details</h3>
+            <p className="text-sm text-gray-600 mb-1">
+              <span className="font-medium">Amount:</span> {formattedAmount} USDC
+            </p>
+            <p className="text-sm text-gray-600 mb-1">
+              <span className="font-medium">Recipient:</span> {recipient.name}
+            </p>
+            <p className="text-sm text-gray-600 mb-3">
+              <span className="font-medium">Description:</span> {request.description}
+            </p>
+            <p className="text-xs font-mono bg-gray-100 p-2 rounded-md break-all">
+              {transactionSignature}
+            </p>
+          </div>
+          
+          <div className="flex flex-col space-y-4">
             <button
-              onClick={() => navigate(`/payment?id=${request.id}`)}
-              className="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              onClick={() => navigate('/history')}
+              className="w-full py-3 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
             >
-              Continue to Payment
+              View Transaction History
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Return to Home
             </button>
           </div>
         </div>
@@ -293,11 +438,26 @@ const PayRequestPage = () => {
                         <div className="bg-green-50 text-green-700 p-4 rounded-lg flex items-center">
                           <FaWallet className="mr-2" /> Wallet connected successfully!
                         </div>
+                        
+                        {paymentError && (
+                          <div className="bg-red-50 text-red-700 p-4 rounded-lg text-left">
+                            <p className="font-medium">Error:</p>
+                            <p className="text-sm">{paymentError}</p>
+                          </div>
+                        )}
+                        
                         <button
-                          onClick={startPayment}
-                          className="bg-primary hover:bg-primary/90 text-white font-medium px-8 py-3 rounded-lg transition-colors"
+                          onClick={handleMakePayment}
+                          disabled={processing}
+                          className="bg-primary hover:bg-primary/90 text-white font-medium px-8 py-3 rounded-lg transition-colors w-full flex items-center justify-center"
                         >
-                          Proceed to Payment
+                          {processing ? (
+                            <>
+                              <FaSpinner className="animate-spin mr-2" /> Processing Payment...
+                            </>
+                          ) : (
+                            <>Pay {formattedAmount} USDC</>
+                          )}
                         </button>
                       </div>
                     )}
@@ -305,6 +465,7 @@ const PayRequestPage = () => {
                     <button
                       onClick={() => setStep(1)}
                       className="text-gray-500 hover:text-gray-700 text-sm"
+                      disabled={processing}
                     >
                       <FaArrowLeft className="inline mr-1" />
                       Back to details
