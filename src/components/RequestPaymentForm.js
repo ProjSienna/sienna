@@ -223,7 +223,7 @@ const RequestPaymentForm = ({ onClose }) => {
     e.preventDefault();
     
     // Create a transaction record and get payment ID
-    const paymentIdFromAPI = '';//await createTransactionRecord();
+    const paymentIdFromAPI = await createTransactionRecord();
     setPaymentId(paymentIdFromAPI);
     
     // If we couldn't create a transaction record, show error but continue
@@ -281,12 +281,13 @@ const RequestPaymentForm = ({ onClose }) => {
         context: description || 'Payment request',
         senderName: senderName || 'A colleague',
         senderEmail: senderEmail || '',
+        senderWallet: publicKey.toString(),
         dueDate: dueDate || ''
       };
 
       // Add the transaction ID if available
       if (paymentId) {
-        emailData.transactionId = paymentId;
+        emailData.paymentLink = paymentLink;
       }
       
       console.log('Sending email data:', emailData);
@@ -685,8 +686,8 @@ const RequestPaymentForm = ({ onClose }) => {
       
       <div className="text-center">
         <div className="flex justify-center mb-4">
-          <div className="bg-green-100 p-3 rounded-full">
-            <svg className="h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <div className="bg-primary bg-opacity-10 p-3 rounded-full">
+            <svg className="h-12 w-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
             </svg>
           </div>
@@ -697,10 +698,10 @@ const RequestPaymentForm = ({ onClose }) => {
         </p>
         
         {paymentId && (
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-semibold text-blue-800 mb-2">Transaction Details</h4>
-            <p className="text-sm text-gray-700 mb-1">Transaction ID: <span className="font-mono bg-blue-100 px-2 py-1 rounded">{paymentId}</span></p>
-            <p className="text-sm text-gray-600">This transaction is now being tracked with status: <span className="font-semibold text-blue-700">Requested</span></p>
+          <div className="mb-6 p-4 bg-primary bg-opacity-5 rounded-lg border border-primary border-opacity-10">
+            <h4 className="font-semibold text-primary mb-2">Transaction Details</h4>
+            <p className="text-sm text-gray-700 mb-1">Transaction ID: <span className="font-mono bg-primary bg-opacity-10 px-2 py-1 rounded">{paymentId}</span></p>
+            <p className="text-sm text-gray-600">This transaction is now being tracked with status: <span className="font-semibold text-primary">Requested</span></p>
           </div>
         )}
         
@@ -718,13 +719,13 @@ const RequestPaymentForm = ({ onClose }) => {
               setEmailError(null);
               setPaymentId(null);
             }}
-            className="w-full py-3 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="w-full py-3 px-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 shadow-md"
           >
             Request Another Payment
           </button>
           <Link 
             to="/history" 
-            className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-center"
+            className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-center"
           >
             View Payment History
           </Link>
