@@ -364,44 +364,21 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                   <FaMoneyBillWave className="mr-2 text-primary" /> Quick Actions
                 </h2>
                 <div className="space-y-3">
-                  {/* Original Payroll Actions */}
-                  <Link
-                    to="/payroll/run"
+                  {/* Request Payment */}
+                  <button
+                    onClick={handleRequestPayment}
                     className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
                   >
-                    <div className="bg-primary bg-opacity-10 p-2 rounded-md">
-                      <FaMoneyBillWave className="text-primary" />
+                    <div className="bg-green-500 bg-opacity-10 p-2 rounded-md">
+                      <FaArrowUp className="text-green-500" />
                     </div>
                     <div className="ml-3 text-left">
-                      <span className="block font-medium">Process Payroll</span>
-                      <span className="text-xs text-gray-500">Pay multiple people at once</span>
+                      <span className="block font-medium">Request Payment</span>
+                      <span className="text-xs text-gray-500">Send payment requests</span>
                     </div>
-                  </Link>
+                  </button>
 
-                  <Link
-                    to="/payroll"
-                    className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
-                  >
-                    <div className="bg-secondary bg-opacity-10 p-2 rounded-md">
-                      <FaUsers className="text-secondary" />
-                    </div>
-                    <div className="ml-3 text-left">
-                      <span className="block font-medium">Payroll Management</span>
-                      <span className="text-xs text-gray-500">Manage payees and transactions</span>
-                    </div>
-                  </Link>
-
-                  {/* Divider */}
-                  <div className="relative py-3">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-200"></div>
-                    </div>
-                    <div className="relative flex justify-center">
-                      <span className="bg-white px-2 text-sm text-gray-500">Payment Gateway</span>
-                    </div>
-                  </div>
-
-                  {/* Payment Gateway Actions */}
+                  {/* Create Payment Gateway */}
                   <button
                     onClick={handlePaymentGatewaySetup}
                     className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
@@ -427,6 +404,7 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                     </div>
                   </button>
 
+                  {/* Create Payment Link */}
                   <button
                     onClick={() => {/* Handle payment link creation */}}
                     className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
@@ -440,18 +418,43 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                     </div>
                   </button>
 
-                  <button
-                    onClick={handleRequestPayment}
+                  {/* Payroll Divider */}
+                  <div className="relative py-3">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="bg-white px-2 text-sm text-gray-500">Payroll Management</span>
+                    </div>
+                  </div>
+
+                  {/* Payroll Management */}
+                  <Link
+                    to="/payroll"
                     className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
                   >
-                    <div className="bg-green-500 bg-opacity-10 p-2 rounded-md">
-                      <FaArrowUp className="text-green-500" />
+                    <div className="bg-secondary bg-opacity-10 p-2 rounded-md">
+                      <FaUsers className="text-secondary" />
                     </div>
                     <div className="ml-3 text-left">
-                      <span className="block font-medium">Request Payment</span>
-                      <span className="text-xs text-gray-500">Send payment requests</span>
+                      <span className="block font-medium">Payroll Management</span>
+                      <span className="text-xs text-gray-500">Manage payees and transactions</span>
                     </div>
-                  </button>
+                  </Link>
+
+                  {/* Process Payroll */}
+                  <Link
+                    to="/payroll/run"
+                    className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  >
+                    <div className="bg-primary bg-opacity-10 p-2 rounded-md">
+                      <FaMoneyBillWave className="text-primary" />
+                    </div>
+                    <div className="ml-3 text-left">
+                      <span className="block font-medium">Process Payroll</span>
+                      <span className="text-xs text-gray-500">Pay multiple people at once</span>
+                    </div>
+                  </Link>
                 </div>
               </div>
             </div>
