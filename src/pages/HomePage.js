@@ -367,10 +367,10 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                   {/* Request Payment */}
                   <button
                     onClick={handleRequestPayment}
-                    className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+                    className="w-full flex items-center p-3 border border-orange-500 rounded-lg hover:bg-orange-100 text-orange-500"
                   >
-                    <div className="bg-green-500 bg-opacity-10 p-2 rounded-md">
-                      <FaArrowUp className="text-green-500" />
+                    <div className="bg-orange-500 bg-opacity-10 p-2 rounded-md">
+                      <FaArrowUp className="text-orange-500" />
                     </div>
                     <div className="ml-3 text-left">
                       <span className="block font-medium">Request Payment</span>
