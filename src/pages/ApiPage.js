@@ -36,7 +36,7 @@ const ApiPage = () => {
     "context": "Website design project",
     "senderName": "Sender Name",
     "senderEmail": "sender@example.com",
-    "dueDate": "2023-08-15"
+    "dueDate": "2025-08-15"
   }'`,
       js: `// Using fetch API
 const sendPaymentRequest = async () => {
@@ -54,7 +54,7 @@ const sendPaymentRequest = async () => {
       context: 'Website design project',
       senderName: 'Sender Name',
       senderEmail: 'sender@example.com',
-      dueDate: '2023-08-15'
+      dueDate: '2025-08-15'
     }),
   });
   
@@ -75,7 +75,7 @@ payload = {
     "context": "Website design project",
     "senderName": "Sender Name",
     "senderEmail": "sender@example.com",
-    "dueDate": "2023-08-15"
+    "dueDate": "2025-08-15"
 }
 headers = {"Content-Type": "application/json"}
 
@@ -230,7 +230,7 @@ print(response.json())`
   },
   "data": {
     "id": "bf225204-ea42-4fe2-b7db-4c7a5385da36",
-    "sentAt": "2023-08-10T14:25:16.253Z",
+    "sentAt": "2025-08-10T14:25:16.253Z",
     "paymentLink": "https://projectsienna.xyz/pay-request?id=bf225204-ea42-4fe2-b7db-4c7a5385da36"
   }
 }`}</code>

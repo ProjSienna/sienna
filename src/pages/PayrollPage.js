@@ -348,7 +348,7 @@ const PayrollPage = () => {
                   className={`w-full p-3 border rounded-lg ${
                     errors.payrollName ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="e.g., June 2023 Payroll"
+                  placeholder="e.g., June 2025 Payroll"
                   disabled={isSubmitting}
                 />
                 {errors.payrollName && (

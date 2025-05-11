@@ -342,7 +342,7 @@ const PayRequestPage = () => {
                   </div>
                   {sender.wallet && (
                     <p className="text-gray-600">
-                      From: {sender.wallet.slice(0, 6)}...{sender.wallet.slice(-4)}
+                      To: {sender.wallet.slice(0, 6)}...{sender.wallet.slice(-4)}
                     </p>
                   )}
                   {sender.name && <p className="text-gray-600 font-medium mt-2">{sender.name}</p>}
