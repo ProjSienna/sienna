@@ -6,6 +6,7 @@ import { formatWalletAddress } from '../utils/solana';
 import TransactionCard from '../components/TransactionCard';
 import WalletDetails from '../components/WalletDetails';
 import RequestPaymentForm from '../components/RequestPaymentForm';
+import PaymentGatewayGuide from '../components/PaymentGatewayGuide';
 import { 
   FaWallet, 
   FaHistory, 
@@ -28,6 +29,7 @@ const HomePage = () => {
   const { publicKey } = useWallet();
   const { transactions } = useTransactions();
   const [showRequestPayment, setShowRequestPayment] = useState(false);
+  const [showPaymentGateway, setShowPaymentGateway] = useState(false);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
@@ -45,6 +47,10 @@ const HomePage = () => {
 
   const handleRequestPayment = () => {
     setShowRequestPayment(true);
+  };
+
+  const handlePaymentGatewaySetup = () => {
+    setShowPaymentGateway(true);
   };
 
   const handleSubscribe = async (e) => {
@@ -125,6 +131,13 @@ const HomePage = () => {
       {showRequestPayment && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <RequestPaymentForm onClose={() => setShowRequestPayment(false)} />
+        </div>
+      )}
+
+      {/* Payment Gateway Guide Modal */}
+      {showPaymentGateway && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <PaymentGatewayGuide onClose={() => setShowPaymentGateway(false)} />
         </div>
       )}
 
@@ -390,7 +403,7 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
 
                   {/* Payment Gateway Actions */}
                   <button
-                    onClick={() => {/* Handle payment gateway setup */}}
+                    onClick={handlePaymentGatewaySetup}
                     className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
                   >
                     <div className="bg-primary bg-opacity-10 p-2 rounded-md">
