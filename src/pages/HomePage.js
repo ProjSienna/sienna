@@ -236,7 +236,7 @@ const HomePage = () => {
                     Send payment requests, manage contacts, and track transactions.
                   </p>
                   <div className="bg-slate-800 text-gray-100 rounded-lg p-4 mb-4 overflow-x-auto relative text-sm">
-                    <pre><code>{`// Send a payment request email with AI-enhanced content
+                    <pre className="whitespace-pre-wrap break-all sm:break-normal"><code className="mobile-friendly-code">{`// Send a payment request email with AI-enhanced content
 fetch('https://api.projectsienna.xyz/api/email/payment-request', {
   method: 'POST',
   headers: {

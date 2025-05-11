@@ -152,3 +152,43 @@ select.elegant-input:focus {
 .elegant-table tr:hover {
   background-color: rgba(233, 150, 122, 0.05);
 }
+
+/* Mobile code block styles */
+.mobile-friendly-code {
+  font-family: 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  tab-size: 2;
+}
+
+@media screen and (max-width: 640px) {
+  pre {
+    font-size: 0.75rem;
+    padding: 0.75rem !important;
+  }
+  
+  .mobile-friendly-code {
+    font-size: 0.75rem;
+    word-break: break-word;
+  }
+  
+  code[class*="language-"] {
+    white-space: pre-wrap !important;
+  }
+}
+
+/* Ensure code blocks wrap properly on all devices */
+pre {
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+pre code {
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* Handle long URLs and strings in code blocks */
+.break-words {
+  word-break: break-word;
+}

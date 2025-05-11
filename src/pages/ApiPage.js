@@ -114,7 +114,7 @@ print(response.json())`
             <div>
               <h3 className="text-lg font-semibold text-blue-800 mb-2">Base URL</h3>
               <p className="text-gray-700 mb-3">All API endpoints are available at the following base URL:</p>
-              <div className="bg-white p-3 rounded border border-blue-200 font-mono text-sm mb-3">
+              <div className="bg-white p-3 rounded border border-blue-200 font-mono text-sm mb-3 overflow-x-auto whitespace-pre-wrap break-words">
                 https://api.projectsienna.xyz
               </div>
             </div>
@@ -156,11 +156,11 @@ print(response.json())`
             <p className="text-gray-600 mb-6">{endpoint.description}</p>
             
             <div className="mb-6">
-              <div className="flex items-center mb-2">
+              <div className="flex flex-wrap items-center mb-2">
                 <span className={`inline-block px-3 py-1 text-sm rounded-md font-medium ${endpoint.method === 'GET' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
                   {endpoint.method}
                 </span>
-                <span className="ml-3 font-mono text-gray-700">{endpoint.endpoint}</span>
+                <span className="ml-3 font-mono text-gray-700 overflow-x-auto max-w-full">{endpoint.endpoint}</span>
                 <button
                   onClick={() => handleCopy(endpoint.endpoint, endpoint.id + '-endpoint')}
                   className="ml-2 p-1 text-gray-500 hover:text-primary transition-colors"
@@ -172,7 +172,7 @@ print(response.json())`
             </div>
 
             <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-200 mb-8">
-              <div className="flex border-b border-gray-200">
+              <div className="flex flex-wrap border-b border-gray-200">
                 <button 
                   onClick={() => handleTabChange(endpoint.id, 'curl')}
                   className={`px-4 py-2 font-medium flex items-center transition-colors ${
@@ -206,8 +206,8 @@ print(response.json())`
               </div>
               
               <div className="relative">
-                <pre className="p-6 overflow-x-auto text-sm">
-                  <code className={`language-${getActiveCode(endpoint).language}`}>{getActiveCode(endpoint).code}</code>
+                <pre className="p-4 sm:p-6 overflow-x-auto text-sm whitespace-pre-wrap break-all sm:break-normal">
+                  <code className={`language-${getActiveCode(endpoint).language} mobile-friendly-code`}>{getActiveCode(endpoint).code}</code>
                 </pre>
                 <button
                   onClick={() => handleCopy(getActiveCode(endpoint).code, endpoint.id + '-' + getActiveCode(endpoint).activeTab)}
@@ -221,8 +221,8 @@ print(response.json())`
 
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Response</h3>
-              <pre className="bg-gray-50 p-4 rounded-md overflow-x-auto text-sm">
-                <code className="language-json">{`{
+              <pre className="bg-gray-50 p-4 rounded-md overflow-x-auto text-sm whitespace-pre-wrap break-all sm:break-normal">
+                <code className="language-json mobile-friendly-code">{`{
   "message": "Payment request email sent successfully",
   "aiContent": {
     "subject": "Friendly Reminder: Payment for Your Website Design Project 💻✨",
