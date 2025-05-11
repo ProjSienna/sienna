@@ -2,24 +2,28 @@ import React from 'react';
 import { FaTimes, FaCopy, FaCheck } from 'react-icons/fa';
 
 const PaymentGatewayGuide = ({ onClose }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [copiedIndex, setCopiedIndex] = React.useState(null);
 
-  const handleCopy = (text) => {
+  const handleCopy = (text, index) => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
   };
 
+  const isStandalone = !onClose || typeof onClose !== 'function';
+
   return (
-    <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className={`bg-white rounded-xl ${!isStandalone ? 'shadow-xl max-w-4xl w-full max-h-[90vh]' : ''} overflow-y-auto`}>
       <div className="sticky top-0 bg-white z-10 px-6 py-4 border-b flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-800">Payment Gateway Setup</h2>
-        <button 
-          onClick={onClose}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <FaTimes />
-        </button>
+        {!isStandalone && (
+          <button 
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <FaTimes />
+          </button>
+        )}
       </div>
       
       <div className="p-6">
@@ -55,10 +59,10 @@ const PaymentGatewayGuide = ({ onClose }) => {
     "recipient_name": "Your Name",
     "memo": "Item ID - {your item id}",
     "status": "requested"
-  }'`)}
+  }'`, 1)}
               className="absolute top-2 right-2 text-gray-500 hover:text-primary p-1"
             >
-              {copied ? <FaCheck className="text-green-500" /> : <FaCopy />}
+              {copiedIndex === 1 ? <FaCheck className="text-green-500" /> : <FaCopy />}
             </button>
           </div>
           
@@ -85,10 +89,10 @@ const PaymentGatewayGuide = ({ onClose }) => {
   "memo": "Item ID - {your item id}",
   "status": "requested",
   "timestamp": "2025-05-11T03:40:00.167Z"
-}`)}
+}`, 2)}
               className="absolute top-2 right-2 text-gray-500 hover:text-primary p-1"
             >
-              {copied ? <FaCheck className="text-green-500" /> : <FaCopy />}
+              {copiedIndex === 2 ? <FaCheck className="text-green-500" /> : <FaCopy />}
             </button>
           </div>
           
@@ -99,10 +103,10 @@ const PaymentGatewayGuide = ({ onClose }) => {
               {`https://projectsienna.xyz/pay-request?id=28ecec7a-5438-4d09-9af3-0282adc0ffce`}
             </pre>
             <button 
-              onClick={() => handleCopy(`https://projectsienna.xyz/pay-request?id=28ecec7a-5438-4d09-9af3-0282adc0ffce`)}
+              onClick={() => handleCopy(`https://projectsienna.xyz/pay-request?id=28ecec7a-5438-4d09-9af3-0282adc0ffce`, 3)}
               className="absolute top-2 right-2 text-gray-500 hover:text-primary p-1"
             >
-              {copied ? <FaCheck className="text-green-500" /> : <FaCopy />}
+              {copiedIndex === 3 ? <FaCheck className="text-green-500" /> : <FaCopy />}
             </button>
           </div>
           
@@ -115,10 +119,10 @@ const PaymentGatewayGuide = ({ onClose }) => {
               {`curl -X GET https://api.projectsienna.xyz/api/transactions/28ecec7a-5438-4d09-9af3-0282adc0ffce`}
             </pre>
             <button 
-              onClick={() => handleCopy(`curl -X GET https://api.projectsienna.xyz/api/transactions/28ecec7a-5438-4d09-9af3-0282adc0ffce`)}
+              onClick={() => handleCopy(`curl -X GET https://api.projectsienna.xyz/api/transactions/28ecec7a-5438-4d09-9af3-0282adc0ffce`, 4)}
               className="absolute top-2 right-2 text-gray-500 hover:text-primary p-1"
             >
-              {copied ? <FaCheck className="text-green-500" /> : <FaCopy />}
+              {copiedIndex === 4 ? <FaCheck className="text-green-500" /> : <FaCopy />}
             </button>
           </div>
           
@@ -132,14 +136,16 @@ const PaymentGatewayGuide = ({ onClose }) => {
         </div>
       </div>
       
-      <div className="border-t px-6 py-4 flex justify-end">
-        <button
-          onClick={onClose}
-          className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-        >
-          Close
-        </button>
-      </div>
+      {!isStandalone && (
+        <div className="border-t px-6 py-4 flex justify-end">
+          <button
+            onClick={onClose}
+            className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      )}
     </div>
   );
 };

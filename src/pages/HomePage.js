@@ -409,9 +409,21 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                     <div className="bg-primary bg-opacity-10 p-2 rounded-md">
                       <FaMoneyBillWave className="text-primary" />
                     </div>
-                    <div className="ml-3 text-left">
+                    <div className="ml-3 text-left flex-grow">
                       <span className="block font-medium">Setup Payment Gateway</span>
                       <span className="text-xs text-gray-500">Accept payments from customers</span>
+                    </div>
+                    <div className="group relative flex items-center">
+                      <Link 
+                        to="/payment-gateway"
+                        className="text-xs text-primary hover:text-secondary ml-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <span>Share</span>
+                        <div className="absolute right-0 bottom-full mb-2 w-48 bg-white shadow-lg rounded-md p-2 text-xs text-gray-600 hidden group-hover:block">
+                          Share the direct link to the payment gateway guide: <span className="font-mono text-primary">/payment-gateway</span>
+                        </div>
+                      </Link>
                     </div>
                   </button>
 

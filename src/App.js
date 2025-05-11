@@ -11,6 +11,7 @@ import PayrollPage from './pages/PayrollPage';
 import PaymentPage from './pages/PaymentPage';
 import PayRequestPage from './pages/PayRequestPage';
 import ApiPage from './pages/ApiPage';
+import PaymentGatewayPage from './pages/PaymentGatewayPage';
 import { FaXTwitter } from 'react-icons/fa6';
 import './App.css';
 
@@ -32,6 +33,7 @@ function App() {
                     <Route path="/pay" element={<PaymentPage />} />
                     <Route path="/pay-request" element={<PayRequestPage />} />
                     <Route path="/api" element={<ApiPage />} />
+                    <Route path="/payment-gateway" element={<PaymentGatewayPage />} />
                   </Routes>
                 </main>
                 <footer className="bg-neutral py-8 mt-8 border-t border-primary border-opacity-20">
