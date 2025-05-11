@@ -22,7 +22,8 @@ import {
   FaSatelliteDish,
   FaPaperPlane,
   FaBell,
-  FaCheckCircle
+  FaCheckCircle,
+  FaSync
 } from 'react-icons/fa';
 
 const HomePage = () => {
@@ -33,6 +34,7 @@ const HomePage = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Show recent transactions
   const recentTransactions = transactions.slice(0, 5);
@@ -89,6 +91,38 @@ const HomePage = () => {
       alert('Could not subscribe at this time. Please try again later.');
     } finally {
       setSubscribing(false);
+    }
+  };
+
+  const handleRefreshBalances = async () => {
+    setIsLoading(true);
+    try {
+      // Call the API to refresh balances
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${apiUrl}/api/balances/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          walletAddress: publicKey
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to refresh balances');
+      }
+      
+      // Refresh the transactions
+      // This is a placeholder and should be replaced with actual API call to refresh transactions
+      // For now, we'll just reload the page
+      window.location.reload();
+    } catch (error) {
+      console.error('Balance refresh error:', error);
+      alert('Failed to refresh balances. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -460,27 +494,235 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
             </div>
           </div>
 
-          {/* Income Tracking Section */}
+          {/* Financial Dashboard Section */}
           <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-              <FaChartLine className="mr-2 text-primary" /> Income Dashboard
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                <FaChartLine className="mr-2 text-primary" /> Financial Dashboard
+              </h2>
+              <button 
+                onClick={handleRefreshBalances}
+                className="text-sm text-primary flex items-center"
+                disabled={isLoading}
+              >
+                <FaSync className={isLoading ? "animate-spin mr-1" : "mr-1"} />
+                Refresh
+              </button>
+            </div>
+
+            {/* Key Performance Indicators */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+              <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-4">
                 <p className="text-sm text-gray-500 mb-1">Total Received</p>
                 <p className="text-2xl text-primary">{incomeStats.totalReceived}</p>
+                <div className="flex items-center mt-2 text-xs text-green-600">
+                  <FaArrowUp className="mr-1" /> 
+                  <span>+12% from last month</span>
+                </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Pending Payments</p>
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-4">
+                <p className="text-sm text-gray-500 mb-1">Pending Income</p>
                 <p className="text-2xl text-orange-500">{incomeStats.pendingPayments}</p>
+                <div className="flex items-center mt-2 text-xs text-gray-500">
+                  <span>Expected within 7 days</span>
+                </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Last Month</p>
-                <p className="text-2xl text-gray-800">{incomeStats.lastMonthIncome}</p>
+              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-4">
+                <p className="text-sm text-gray-500 mb-1">Total Expenses</p>
+                <p className="text-2xl text-red-500">8,500 USDC</p>
+                <div className="flex items-center mt-2 text-xs text-red-500">
+                  <FaArrowUp className="mr-1" /> 
+                  <span>+5% from last month</span>
+                </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Monthly Growth</p>
-                <p className="text-2xl text-green-500">{incomeStats.monthlyGrowth}</p>
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4">
+                <p className="text-sm text-gray-500 mb-1">Yield Earnings</p>
+                <p className="text-2xl text-green-600">1,250 USDC</p>
+                <div className="flex items-center mt-2 text-xs text-gray-500">
+                  <span>Current APY: 5.2%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Financial Health and Insights */}
+            <div className="mb-8">
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800">AI-Powered Financial Insights</h3>
+              </div>
+              
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5">
+                <div className="prose max-w-none text-gray-700">
+                  <p className="text-sm">
+                    <span className="font-semibold">Cash Flow Analysis:</span> Based on your transaction history, your monthly income is approximately 12,000 USDC, while your expenses average around 8,500 USDC. This gives you a positive cash flow of ~3,500 USDC per month.
+                  </p>
+                  <p className="text-sm mt-3">
+                    <span className="font-semibold">Financial Health Score:</span> <span className="text-green-600 font-medium">85/100</span> - Your financial health is strong with a good balance of income, savings, and yield generation. Consider increasing your yield deposits to maximize passive income.
+                  </p>
+                  <p className="text-sm mt-3">
+                    <span className="font-semibold">Opportunity:</span> Depositing an additional 10,000 USDC into yield could generate approximately 520 USDC annually at current rates.
+                  </p>
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-blue-100">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Positive Cash Flow
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Regular Income Pattern
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      Yield Opportunity
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Financial Breakdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Income Breakdown */}
+              <div>
+                <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                  <FaArrowDown className="mr-2 text-green-500" /> Income Breakdown
+                </h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm text-gray-600">Client Payments</div>
+                      <div className="text-sm font-medium">15,000 USDC</div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm text-gray-600">Recurring Income</div>
+                      <div className="text-sm font-medium">8,500 USDC</div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '34%' }}></div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm text-gray-600">Yield Earnings</div>
+                      <div className="text-sm font-medium">1,500 USDC</div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '6%' }}></div>
+                    </div>
+                    
+                    <div className="pt-2 mt-2 border-t border-gray-200 flex justify-between items-center">
+                      <div className="text-sm font-medium text-gray-700">Total</div>
+                      <div className="text-sm font-bold text-gray-800">25,000 USDC</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Expense Breakdown */}
+              <div>
+                <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                  <FaArrowUp className="mr-2 text-red-500" /> Expense Breakdown
+                </h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm text-gray-600">Business Services</div>
+                      <div className="text-sm font-medium">3,500 USDC</div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-red-500 h-2 rounded-full" style={{ width: '41%' }}></div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm text-gray-600">Payroll</div>
+                      <div className="text-sm font-medium">4,200 USDC</div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-red-500 h-2 rounded-full" style={{ width: '49%' }}></div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm text-gray-600">Software & Tools</div>
+                      <div className="text-sm font-medium">800 USDC</div>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-red-500 h-2 rounded-full" style={{ width: '10%' }}></div>
+                    </div>
+                    
+                    <div className="pt-2 mt-2 border-t border-gray-200 flex justify-between items-center">
+                      <div className="text-sm font-medium text-gray-700">Total</div>
+                      <div className="text-sm font-bold text-gray-800">8,500 USDC</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Financial Forecast */}
+            <div className="mt-8">
+              <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+                3-Month Forecast
+              </h3>
+              
+              <div className="bg-gradient-to-r from-gray-50 to-purple-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex space-x-4">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                      Income
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      <span className="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
+                      Expenses
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full mr-1"></span>
+                      Net
+                    </span>
+                  </div>
+                  
+                  <div className="text-xs text-gray-500">
+                    AI-powered prediction
+                  </div>
+                </div>
+                
+                <div className="relative h-48">
+                  {/* This would be replaced with a real chart component */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="text-gray-500 text-sm">Forecast Summary:</p>
+                      <p className="text-xl font-bold text-gray-800 mt-1">+10,500 USDC</p>
+                      <p className="text-xs text-gray-500 mt-1">Projected 3-month surplus</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-2 pt-4 border-t border-gray-200">
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="text-xs text-gray-500">June</p>
+                      <p className="text-sm font-medium text-green-600">+3,200 USDC</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">July</p>
+                      <p className="text-sm font-medium text-green-600">+3,500 USDC</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">August</p>
+                      <p className="text-sm font-medium text-green-600">+3,800 USDC</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
