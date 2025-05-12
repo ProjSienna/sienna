@@ -127,15 +127,16 @@ const HomePage = () => {
   };
 
   const features = [
-    {
-      icon: <FaMoneyBillWave className="text-3xl text-primary" />,
-      title: "Send Payments",
-      description: "Send instant USDC payments to anyone, anywhere in the world"
-    },
+
     {
       icon: <FaSatelliteDish className="text-3xl text-primary" />,
       title: "Cross-Border Transactions",
       description: "Fast settlement feature for seamless international transactions"
+    },
+    {
+      icon: <FaArrowUp className="text-3xl text-primary" />,
+      title: "Request Payments",
+      description: "Create and share payment requests with customizable messages"
     },
     {
       icon: <FaUsers className="text-3xl text-primary" />,
@@ -143,14 +144,14 @@ const HomePage = () => {
       description: "Streamline your payroll process with automated USDC payments"
     },
     {
-      icon: <FaArrowUp className="text-3xl text-primary" />,
-      title: "Request Payments",
-      description: "Create and share payment requests with customizable due dates"
-    },
-    {
       icon: <FaFileInvoiceDollar className="text-3xl text-primary" />,
       title: "Send Invoices",
       description: "Generate professional invoices and get paid in USDC"
+    },
+    {
+      icon: <FaMoneyBillWave className="text-3xl text-primary" />,
+      title: "Easy Tax Reporting",
+      description: "Streamline your tax compliance with detailed payment records"
     },
     {
       icon: <FaPeopleArrows className="text-3xl text-primary" />,
@@ -181,11 +182,16 @@ const HomePage = () => {
           {/* Hero Section */}
           <div className="text-center py-16 max-w-4xl mx-auto">
             <h1 className="text-5xl font-bold text-gray-800 mb-6">
-              The Ultimate USDC Payment Experience
+              The Ultimate Stablecoin Payment Experience
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              Send, receive, and manage payments globally with the power of USDC on Solana.
-              Experience lightning-fast transactions at a fraction of the cost.
+            Helping creators and freelancers get paid faster, smarter, and globally with stablecoins.
+            <br />
+            <span className="font-medium text-primary">
+              AI-powered tools, invoicing, and tax reporting—so you can focus on your craft.
+            </span>
+            <br />
+
             </p>
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-2 text-primary">
@@ -371,7 +377,7 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
               Ready to Get Started?
             </h2>
             <p className="text-gray-600 mb-8">
-              Connect your wallet to start sending and receiving payments in USDC.
+              Connect your wallet to start sending and receiving payments in stablecoins.
             </p>
             <div className="flex justify-center items-center gap-2 text-gray-500">
               <FaWallet className="text-xl" />
