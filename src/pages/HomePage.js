@@ -129,14 +129,14 @@ const HomePage = () => {
   const features = [
 
     {
-      icon: <FaSatelliteDish className="text-3xl text-primary" />,
-      title: "Cross-Border Transactions",
-      description: "Fast settlement feature for seamless international transactions"
-    },
-    {
       icon: <FaArrowUp className="text-3xl text-primary" />,
       title: "Request Payments",
       description: "Create and share payment requests with customizable messages"
+    },
+    {
+      icon: <FaFileInvoiceDollar className="text-3xl text-primary" />,
+      title: "Send Invoices",
+      description: "Generate professional invoices and get paid in USDC"
     },
     {
       icon: <FaUsers className="text-3xl text-primary" />,
@@ -144,9 +144,9 @@ const HomePage = () => {
       description: "Streamline your payroll process with automated USDC payments"
     },
     {
-      icon: <FaFileInvoiceDollar className="text-3xl text-primary" />,
-      title: "Send Invoices",
-      description: "Generate professional invoices and get paid in USDC"
+      icon: <FaChartLine className="text-3xl text-primary" />,
+      title: "Grow Your Wealth",
+      description: "Smart tools designed to maximize returns and help your money work for you"
     },
     {
       icon: <FaMoneyBillWave className="text-3xl text-primary" />,
@@ -229,7 +229,7 @@ const HomePage = () => {
           {/* API Documentation Section */}
           <div className="mt-16">
             <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-              Powerful API Integration
+              Plug-and-Play Payment API for Small Business Owners
             </h2>
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 shadow-md">
               <div className="flex flex-col lg:flex-row gap-8">
