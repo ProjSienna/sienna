@@ -182,21 +182,20 @@ const HomePage = () => {
           {/* Hero Section */}
           <div className="text-center py-16 max-w-4xl mx-auto">
             <h1 className="text-5xl font-bold text-gray-800 mb-6">
-              The Ultimate Stablecoin Payment Experience
+            The Stablecoin Payment Stack for Modern Teams
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-            Helping creators and freelancers get paid faster, smarter, and globally with stablecoins.
-            <br />
             <span className="font-medium text-primary">
               AI-powered tools, invoicing, and tax reporting—so you can focus on your craft.
             </span>
             <br />
-
+            Helping creators and freelancers get paid faster, smarter, and globally with stablecoins.
+            <br />
             </p>
             <div className="flex items-center justify-center gap-4">
               <div className="flex items-center gap-2 text-primary">
                 <FaShieldAlt />
-                <span>Secure</span>
+                <span>Non Custodial</span>
               </div>
               <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
               <div className="flex items-center gap-2 text-primary">
@@ -214,7 +213,7 @@ const HomePage = () => {
           {/* Features Grid */}
           <div>
             <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
-              Ideal for Small Biz, Gig Economy, and Freelancers
+            Affordable, flexible crypto payments for small businesses
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {features.map((feature, index) => (
