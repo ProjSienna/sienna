@@ -191,12 +191,12 @@ const GrowthPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800 flex items-center">
           <FaChartLine className="mr-3 text-primary" />
           Growth & Yield
         </h1>
-        <div className="text-xs text-gray-400 flex items-center">
+        <div className="text-xs text-gray-400 flex items-center mt-1">
           <FaShieldAlt className="mr-1 text-gray-400" />
           <span>Yield infrastructure supported by Lulo</span>
         </div>
