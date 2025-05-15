@@ -456,20 +456,6 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                     </div>
                   </div>
 
-                  {/* Payroll Management */}
-                  <Link
-                    to="/payroll"
-                    className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
-                  >
-                    <div className="bg-secondary bg-opacity-10 p-2 rounded-md">
-                      <FaUsers className="text-secondary" />
-                    </div>
-                    <div className="ml-3 text-left">
-                      <span className="block font-medium">Payroll Management</span>
-                      <span className="text-xs text-gray-500">Manage payees and transactions</span>
-                    </div>
-                  </Link>
-
                   {/* Process Payroll */}
                   <Link
                     to="/payroll/run"

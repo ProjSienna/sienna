@@ -296,7 +296,7 @@ const WalletDetails = () => {
         <div className="bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 mb-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-              <FaPercent className="mr-2 text-primary" /> Yield Earnings
+              <FaPercent className="mr-2 text-primary" /> Growth
             </h3>
             <Link 
               to="/growth" 
@@ -323,7 +323,7 @@ const WalletDetails = () => {
                 <p className="text-xl font-bold text-primary">{yieldInfo.apy.toFixed(2)}%</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Deposited</p>
+                <p className="text-sm text-gray-500">Amount in Growth</p>
                 <p className="text-xl font-bold">{yieldInfo.totalDeposited.toFixed(2)} USDC</p>
               </div>
               <div>
