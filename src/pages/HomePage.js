@@ -396,12 +396,7 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
         <>
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            {/* Left Column - Wallet Details */}
-            <div className="lg:col-span-2">
-              <WalletDetails />
-            </div>
-
-            {/* Right Column - Quick Actions */}
+            {/* Left Column - Quick Actions */}
             <div>
               <div className="bg-white rounded-xl shadow-md p-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -423,8 +418,8 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                   </button>
 
                   {/* Create Payment Gateway */}
-                  <button
-                    onClick={handlePaymentGatewaySetup}
+                  <Link 
+                    to="/payment-gateway"
                     className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
                   >
                     <div className="bg-primary bg-opacity-10 p-2 rounded-md">
@@ -434,19 +429,7 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                       <span className="block font-medium">Setup Payment Gateway</span>
                       <span className="text-xs text-gray-500">Accept payments from customers</span>
                     </div>
-                    <div className="group relative flex items-center">
-                      <Link 
-                        to="/payment-gateway"
-                        className="text-xs text-primary hover:text-secondary ml-2"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <span>Share</span>
-                        <div className="absolute right-0 bottom-full mb-2 w-48 bg-white shadow-lg rounded-md p-2 text-xs text-gray-600 hidden group-hover:block">
-                          Share the direct link to the payment gateway guide: <span className="font-mono text-primary">/payment-gateway</span>
-                        </div>
-                      </Link>
-                    </div>
-                  </button>
+                  </Link>
 
                   {/* Create Payment Link */}
                   <button
@@ -501,6 +484,11 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                   </Link>
                 </div>
               </div>
+            </div>
+
+            {/* Right Column - Wallet Details */}
+            <div className="lg:col-span-2">
+              <WalletDetails />
             </div>
           </div>
 
