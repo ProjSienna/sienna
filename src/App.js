@@ -14,6 +14,7 @@ import PaymentPage from './pages/PaymentPage';
 import PayRequestPage from './pages/PayRequestPage';
 import ApiPage from './pages/ApiPage';
 import PaymentGatewayPage from './pages/PaymentGatewayPage';
+import FinancialInsightPage from './pages/FinancialInsightPage';
 import { FaXTwitter, FaEnvelope } from 'react-icons/fa6';
 import './App.css';
 
@@ -31,6 +32,7 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/landing" element={<LandingPage />} />
                     <Route path="/growth" element={<GrowthPage />} />
+                    <Route path="/financial-insights" element={<FinancialInsightPage />} />
                     <Route path="/payroll" element={<PayeesPage />} />
                     <Route path="/payroll/run" element={<PayrollPage />} />
                     <Route path="/history" element={<PayeesPage initialTab="history" />} />
