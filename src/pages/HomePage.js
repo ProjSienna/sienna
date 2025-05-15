@@ -521,37 +521,37 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
 
             {/* Key Performance Indicators */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Total Received</p>
-                <p className="text-2xl text-primary">{incomeStats.totalReceived}</p>
-                <div className="flex items-center mt-2 text-xs text-green-600">
+              <div className="bg-white border border-primary/20 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Total Received</p>
+                <p className="text-2xl text-primary font-semibold">{incomeStats.totalReceived}</p>
+                <div className="flex items-center mt-2 text-xs text-emerald-600">
                   <FaArrowUp className="mr-1" /> 
                   <span>+12% from last month</span>
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-secondary/5 to-secondary/10 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Pending Income</p>
-                <p className="text-2xl text-secondary">{incomeStats.pendingPayments}</p>
-                <div className="flex items-center mt-2 text-xs text-gray-500">
+              <div className="bg-white border border-secondary/20 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Pending Income</p>
+                <p className="text-2xl text-secondary font-semibold">{incomeStats.pendingPayments}</p>
+                <div className="flex items-center mt-2 text-xs text-gray-600">
                   <span>Expected within 7 days</span>
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Total Expenses</p>
-                <p className="text-2xl text-red-500">8,500 USDC</p>
-                <div className="flex items-center mt-2 text-xs text-red-500">
+              <div className="bg-white border border-red-300 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Total Expenses</p>
+                <p className="text-2xl text-red-600 font-semibold">8,500 USDC</p>
+                <div className="flex items-center mt-2 text-xs text-red-600">
                   <FaArrowUp className="mr-1" /> 
                   <span>+5% from last month</span>
                 </div>
               </div>
               <Link to="/growth" className="block">
-                <div className="bg-gradient-to-br from-secondary/5 to-primary/5 rounded-lg p-4 h-full cursor-pointer hover:shadow-md transition-shadow">
+                <div className="bg-white border border-primary/20 rounded-lg p-4 h-full cursor-pointer hover:shadow-md transition-shadow">
                   <div className="flex justify-between">
-                    <p className="text-sm text-gray-500 mb-1">Yield Earnings</p>
+                    <p className="text-sm text-gray-600 mb-1">Yield Earnings</p>
                     <span className="text-xs text-primary font-medium">View Details →</span>
                   </div>
-                  <p className="text-2xl text-primary">1,250 USDC</p>
-                  <div className="flex items-center mt-2 text-xs text-gray-500">
+                  <p className="text-2xl text-primary font-semibold">1,250 USDC</p>
+                  <div className="flex items-center mt-2 text-xs text-gray-600">
                     <span>Current APY: 5.2%</span>
                   </div>
                 </div>
@@ -562,8 +562,8 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
             <div className="mb-8">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-                    <FaLightbulb className="text-primary" />
+                  <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center mr-3">
+                    <FaLightbulb className="text-amber-600" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-800">AI-Powered Insights</h3>
                 </div>
@@ -575,25 +575,25 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                 </Link>
               </div>
               
-              <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-xl p-5">
+              <div className="bg-white border border-gray-200 rounded-xl p-5">
                 <div className="prose max-w-none text-gray-700">
                   <p className="text-sm">
                     <span className="font-semibold">Cash Flow Analysis:</span> Based on your transaction history, your monthly income is approximately 12,000 USDC, while your expenses average around 8,500 USDC. This gives you a positive cash flow of ~3,500 USDC per month.
                   </p>
                   <p className="text-sm mt-3">
-                    <span className="font-semibold">Financial Health Score:</span> <span className="text-secondary font-medium">85/100</span> - Your financial health is strong with a good balance of income, savings, and yield generation.
+                    <span className="font-semibold">Financial Health Score:</span> <span className="text-secondary font-semibold">85/100</span> - Your financial health is strong with a good balance of income, savings, and yield generation.
                   </p>
                 </div>
                 
-                <div className="mt-4 pt-4 border-t border-primary/10">
+                <div className="mt-4 pt-4 border-t border-gray-200">
                   <div className="flex flex-wrap gap-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                       Positive Cash Flow
                     </span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                       Regular Income Pattern
                     </span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                       Yield Opportunity
                     </span>
                   </div>
