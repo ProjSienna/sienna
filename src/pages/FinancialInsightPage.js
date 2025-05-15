@@ -334,7 +334,7 @@ const FinancialInsightPage = () => {
             <FaExternalLinkAlt className="mr-1 text-xs" />
             Back to Dashboard
           </Link>
-          <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm flex items-center">
+          <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm flex items-center hover:bg-primary/90 transition-colors">
             <FaDownload className="mr-2" />
             Export Report
           </button>
