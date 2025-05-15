@@ -17,7 +17,7 @@ const Navbar = () => {
           {/* Logo and Desktop Navigation */}
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-2xl font-display font-bold text-primary">
+              <Link to="/landing" className="text-2xl font-display font-bold text-primary">
                 Sienna
               </Link>
             </div>

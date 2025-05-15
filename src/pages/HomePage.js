@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useTransactions } from '../contexts/TransactionsContext';
 import { formatWalletAddress } from '../utils/solana';
@@ -35,6 +35,11 @@ const HomePage = () => {
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // If user is not authenticated, redirect to landing page
+  if (!publicKey) {
+    return <Navigate to="/landing" />;
+  }
 
   // Show recent transactions
   const recentTransactions = transactions.slice(0, 5);
