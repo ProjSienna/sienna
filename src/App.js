@@ -7,6 +7,7 @@ import PayrollsProvider from './contexts/PayrollsContext';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import LandingPage from './pages/LandingPage';
+import GrowthPage from './pages/GrowthPage';
 import PayeesPage from './pages/PayeesPage';
 import PayrollPage from './pages/PayrollPage';
 import PaymentPage from './pages/PaymentPage';
@@ -29,6 +30,7 @@ function App() {
                   <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/landing" element={<LandingPage />} />
+                    <Route path="/growth" element={<GrowthPage />} />
                     <Route path="/payroll" element={<PayeesPage />} />
                     <Route path="/payroll/run" element={<PayrollPage />} />
                     <Route path="/history" element={<PayeesPage initialTab="history" />} />

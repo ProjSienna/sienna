@@ -533,13 +533,18 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                   <span>+5% from last month</span>
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4">
-                <p className="text-sm text-gray-500 mb-1">Yield Earnings</p>
-                <p className="text-2xl text-green-600">1,250 USDC</p>
-                <div className="flex items-center mt-2 text-xs text-gray-500">
-                  <span>Current APY: 5.2%</span>
+              <Link to="/growth" className="block">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 h-full cursor-pointer hover:shadow-md transition-shadow">
+                  <div className="flex justify-between">
+                    <p className="text-sm text-gray-500 mb-1">Yield Earnings</p>
+                    <span className="text-xs text-green-600 font-medium">View Details →</span>
+                  </div>
+                  <p className="text-2xl text-green-600">1,250 USDC</p>
+                  <div className="flex items-center mt-2 text-xs text-gray-500">
+                    <span>Current APY: 5.2%</span>
+                  </div>
                 </div>
-              </div>
+              </Link>
             </div>
 
             {/* Financial Health and Insights */}
