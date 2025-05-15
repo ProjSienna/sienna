@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { formatWalletAddress } from '../utils/solana';
 import { fetchWalletBalances } from '../utils/web3';
-import { FaCheckCircle, FaTimesCircle, FaSpinner, FaCopy, FaExternalLinkAlt, FaArrowUp, FaArrowDown, FaPercent, FaSync, FaWallet } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaSpinner, FaCopy, FaExternalLinkAlt, FaArrowUp, FaArrowDown, FaPercent, FaSync, FaWallet, FaChartLine } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 /**
  * Displays detailed information about a wallet including:
@@ -244,13 +245,9 @@ const WalletDetails = () => {
             <div className="bg-gray-50 rounded-xl p-5">
               <div className="flex justify-between items-center mb-3">
                 <div className="flex items-center">
-                  <h3 className="text-sm font-medium text-gray-500 mr-2">Current Balance</h3>
-                  <div className="flex items-baseline ml-2">
-                    <div className="text-sm font-medium text-purple-600 mr-1">
-                      {walletBalance?.sol?.toFixed(4) || '0'}
-                    </div>
-                    <div className="text-xs font-medium text-purple-600">SOL</div>
-                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                    <FaWallet className="mr-2 text-primary" /> Current Balance
+                  </h3>
                 </div>
                 <div className="flex space-x-2">
                   <button 
@@ -280,6 +277,13 @@ const WalletDetails = () => {
                 <div className="text-lg font-medium text-primary">USDC</div>
               </div>
               
+              <div className="flex items-baseline mt-2">
+                <div className="text-sm font-medium text-purple-600 mr-1">
+                  {walletBalance?.sol?.toFixed(4) || '0'}
+                </div>
+                <div className="text-xs font-medium text-purple-600">SOL</div>
+              </div>
+              
               <p className="text-xs text-gray-500 mt-3 flex items-center">
                 <FaCheckCircle className="text-green-500 mr-1" size={12} />
                 Verified on-chain balance via Solana RPC
@@ -289,10 +293,19 @@ const WalletDetails = () => {
         </div>
 
         {/* Yield Information */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <FaPercent className="mr-2 text-primary" /> Yield Earnings
-          </h3>
+        <div className="bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+              <FaPercent className="mr-2 text-primary" /> Yield Earnings
+            </h3>
+            <Link 
+              to="/growth" 
+              className="text-sm text-primary px-3 py-1.5 rounded-lg border border-primary/20 flex items-center hover:bg-primary/10 transition-colors"
+            >
+              <FaChartLine className="mr-1 text-xs" />
+              Manage in Growth
+            </Link>
+          </div>
           
           {isLoadingYield ? (
             <div className="flex items-center justify-center p-5">
@@ -304,39 +317,21 @@ const WalletDetails = () => {
               {yieldError}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <p className="text-sm text-gray-500">24HR APY</p>
+                <p className="text-sm text-gray-500">Current APY</p>
                 <p className="text-xl font-bold text-primary">{yieldInfo.apy.toFixed(2)}%</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Deposited</p>
+                <p className="text-sm text-gray-500">Deposited</p>
                 <p className="text-xl font-bold">{yieldInfo.totalDeposited.toFixed(2)} USDC</p>
               </div>
-              <div className="col-span-2">
+              <div>
                 <p className="text-sm text-gray-500">Interest Earned</p>
                 <p className="text-xl font-bold text-green-600">{yieldInfo.earnedInterest.toFixed(2)} USDC</p>
               </div>
             </div>
           )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={handleDeposit}
-            className="flex items-center justify-center px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
-            disabled={isLoading || isLoadingYield}
-          >
-            <FaArrowUp className="mr-2" /> Deposit
-          </button>
-          <button
-            onClick={handleWithdraw}
-            className="flex items-center justify-center px-4 py-3 border-2 border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-colors"
-            disabled={isLoading || isLoadingYield || !yieldInfo.totalDeposited}
-          >
-            <FaArrowDown className="mr-2" /> Withdraw
-          </button>
         </div>
       </div>
 
