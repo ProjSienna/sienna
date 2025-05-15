@@ -177,7 +177,7 @@ const PayeesPage = ({ initialTab = 'payees' }) => {
               </button>
               <button
                 onClick={handleRunPayroll}
-                className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 flex items-center"
+                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center"
               >
                 <FaMoneyBillWave className="mr-2" /> Process Payroll
               </button>

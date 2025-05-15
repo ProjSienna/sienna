@@ -13,7 +13,7 @@ import PaymentPage from './pages/PaymentPage';
 import PayRequestPage from './pages/PayRequestPage';
 import ApiPage from './pages/ApiPage';
 import PaymentGatewayPage from './pages/PaymentGatewayPage';
-import { FaXTwitter } from 'react-icons/fa6';
+import { FaXTwitter, FaEnvelope } from 'react-icons/fa6';
 import './App.css';
 
 function App() {
@@ -50,15 +50,22 @@ function App() {
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-center md:justify-end space-x-4">
+                      <div className="flex flex-col items-center justify-center md:justify-end space-y-2">
                         <a 
                           href="https://x.com/project_sienna" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:text-primary transition-colors flex items-center gap-1 text-gray-600"
+                          className="hover:text-primary transition-colors flex items-center gap-1 text-gray-600 w-full justify-center md:justify-start"
                         >
                           <FaXTwitter className="text-lg" /> 
                           <span className="text-sm">project_sienna</span>
+                        </a>
+                        <a 
+                          href="mailto:support@projectsienna.xyz" 
+                          className="hover:text-primary transition-colors flex items-center gap-1 text-gray-600 w-full justify-center md:justify-start"
+                        >
+                          <FaEnvelope className="text-lg" /> 
+                          <span className="text-sm">support@projectsienna.xyz</span>
                         </a>
                       </div>
                     </div>

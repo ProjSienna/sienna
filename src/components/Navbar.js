@@ -36,7 +36,7 @@ const Navbar = () => {
                   isActive('/payroll') ? 'border-secondary' : 'border-transparent'
                 } ${isActive('/payroll')} hover:text-secondary transition-colors`}
               >
-                <FaUsers className="mr-2" /> Payroll
+                <FaUsers className="mr-2" /> Pay
               </Link>
               <Link
                 to="/api"

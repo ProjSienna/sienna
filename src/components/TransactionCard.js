@@ -43,7 +43,7 @@ const TransactionCard = ({ transaction }) => {
 
   // Get Solana Explorer URL for the transaction
   const getExplorerLink = (signature) => {
-    return `https://solscan.io/tx/${signature}?cluster=devnet`;
+    return `https://solscan.io/tx/${signature}`;
   };
 
   const payrollName = getPayrollName();
