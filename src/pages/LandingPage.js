@@ -103,12 +103,7 @@ const LandingPage = () => {
         The Stablecoin Payment Stack for Modern Teams
         </h1>
         <p className="text-xl text-gray-600 mb-8">
-        <span className="font-medium text-primary">
-          AI-powered tools, invoicing, and tax reporting—so you can focus on your craft.
-        </span>
-        <br />
-        Helping creators and freelancers get paid faster, smarter, and globally with stablecoins.
-        <br />
+          AI-powered tools for invoicing and tax reporting—helping creators and freelancers get paid faster, smarter, and globally with stablecoins, <span className="font-medium text-primary">so you can focus on your craft.</span>
         </p>
         <div className="flex items-center justify-center gap-4">
           <div className="flex items-center gap-2 text-primary">
