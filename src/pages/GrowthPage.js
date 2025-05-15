@@ -95,14 +95,14 @@ const GrowthPage = () => {
                 <p className="text-2xl text-primary">{growthData.totalDeposited}</p>
               </div>
               
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4">
+              <div className="bg-gradient-to-br from-secondary/5 to-secondary/10 rounded-lg p-4">
                 <p className="text-sm text-gray-500 mb-1">Current APY</p>
-                <p className="text-2xl text-green-600">{growthData.currentYield}</p>
+                <p className="text-2xl text-secondary">{growthData.currentYield}</p>
               </div>
               
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4">
+              <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-lg p-4">
                 <p className="text-sm text-gray-500 mb-1">Estimated Annual</p>
-                <p className="text-2xl text-blue-600">{growthData.estimatedAnnualReturn}</p>
+                <p className="text-2xl text-primary">{growthData.estimatedAnnualReturn}</p>
               </div>
             </div>
             
@@ -113,7 +113,7 @@ const GrowthPage = () => {
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Total Earned</p>
                   <div className="flex items-center">
-                    <p className="text-xl font-semibold text-green-600 mr-2">{growthData.totalEarned}</p>
+                    <p className="text-xl font-semibold text-secondary mr-2">{growthData.totalEarned}</p>
                     <span className="text-xs text-gray-500">since you started</span>
                   </div>
                 </div>
@@ -121,7 +121,7 @@ const GrowthPage = () => {
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Last Month</p>
                   <div className="flex items-center">
-                    <p className="text-xl font-semibold text-green-600 mr-2">{growthData.lastMonthEarned}</p>
+                    <p className="text-xl font-semibold text-secondary mr-2">{growthData.lastMonthEarned}</p>
                     <span className="text-xs text-gray-500">earned in interest</span>
                   </div>
                 </div>
@@ -129,11 +129,11 @@ const GrowthPage = () => {
             </div>
           </div>
           
-          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 shadow-sm">
+          <div className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-xl p-6 shadow-sm">
             <div className="flex items-start mb-4">
-              <FaRegLightbulb className="text-xl text-indigo-500 mr-3 mt-1" />
+              <FaRegLightbulb className="text-xl text-primary mr-3 mt-1" />
               <div>
-                <h3 className="text-lg font-semibold text-indigo-800 mb-2">Growth Strategy</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Growth Strategy</h3>
                 <p className="text-gray-700 mb-3">
                   Your funds are deployed in a diversified portfolio of stable DeFi protocols. 
                   We focus on security first, with strategies that have been battle-tested and audited.
@@ -143,7 +143,7 @@ const GrowthPage = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               <div className="bg-white bg-opacity-70 p-3 rounded-lg flex items-start">
-                <FaLock className="text-green-500 mr-2 mt-1" />
+                <FaLock className="text-primary mr-2 mt-1" />
                 <div>
                   <h4 className="text-sm font-medium text-gray-800">Security First</h4>
                   <p className="text-xs text-gray-600">Multiple audited protocols</p>
@@ -151,7 +151,7 @@ const GrowthPage = () => {
               </div>
               
               <div className="bg-white bg-opacity-70 p-3 rounded-lg flex items-start">
-                <FaExchangeAlt className="text-blue-500 mr-2 mt-1" />
+                <FaExchangeAlt className="text-secondary mr-2 mt-1" />
                 <div>
                   <h4 className="text-sm font-medium text-gray-800">Diversified</h4>
                   <p className="text-xs text-gray-600">Risk spread across platforms</p>
@@ -159,7 +159,7 @@ const GrowthPage = () => {
               </div>
               
               <div className="bg-white bg-opacity-70 p-3 rounded-lg flex items-start">
-                <FaRegClock className="text-purple-500 mr-2 mt-1" />
+                <FaRegClock className="text-primary mr-2 mt-1" />
                 <div>
                   <h4 className="text-sm font-medium text-gray-800">Always Available</h4>
                   <p className="text-xs text-gray-600">Withdraw anytime with no fees</p>
@@ -173,7 +173,7 @@ const GrowthPage = () => {
         <div>
           <div className="bg-white rounded-xl shadow-md p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <FaArrowUp className="mr-2 text-green-500" /> Deposit
+              <FaArrowUp className="mr-2 text-primary" /> Deposit
             </h2>
             
             <form onSubmit={handleDeposit}>
@@ -195,7 +195,7 @@ const GrowthPage = () => {
                 </div>
               </div>
               
-              <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-800 flex items-start">
+              <div className="mb-4 p-3 bg-primary/5 rounded-lg text-sm text-primary flex items-start">
                 <FaInfoCircle className="mr-2 mt-1 flex-shrink-0" />
                 <p>
                   Deposits start earning interest immediately. Current APY: <strong>{growthData.currentYield}</strong>
@@ -204,7 +204,7 @@ const GrowthPage = () => {
               
               <button
                 type="submit"
-                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
+                className="w-full bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -223,7 +223,7 @@ const GrowthPage = () => {
           
           <div className="bg-white rounded-xl shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <FaArrowDown className="mr-2 text-orange-500" /> Withdraw
+              <FaArrowDown className="mr-2 text-secondary" /> Withdraw
             </h2>
             
             <form onSubmit={handleWithdraw}>
@@ -246,7 +246,7 @@ const GrowthPage = () => {
                 </div>
               </div>
               
-              <div className="mb-4 p-3 bg-yellow-50 rounded-lg text-sm text-yellow-800 flex items-start">
+              <div className="mb-4 p-3 bg-secondary/5 rounded-lg text-sm text-secondary flex items-start">
                 <FaInfoCircle className="mr-2 mt-1 flex-shrink-0" />
                 <p>
                   Withdrawals are processed immediately with no fees. Maximum amount: <strong>{growthData.totalDeposited}</strong>
@@ -255,7 +255,7 @@ const GrowthPage = () => {
               
               <button
                 type="submit"
-                className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center"
+                className="w-full bg-secondary text-white py-3 px-4 rounded-lg hover:bg-secondary/90 transition-colors flex items-center justify-center"
                 disabled={isLoading}
               >
                 {isLoading ? (
