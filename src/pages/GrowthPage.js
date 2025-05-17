@@ -167,7 +167,17 @@ const GrowthPage = () => {
       }
       
       // Send the transaction
-      const signature = await sendTransaction(transaction, connection);
+      let signature;
+      try {
+        signature = await sendTransaction(transaction, connection);
+      } catch (error) {
+        // Handle user rejection of transaction
+        console.log("Transaction rejected by user");
+        setTransactionStatus('Transaction rejected by user');
+        setTimeout(() => setTransactionStatus(null), 5000); // Clear message after 5 seconds
+        setIsLoading(false);
+        return; // Exit early
+      }
       
       // Wait for confirmation
       setTransactionStatus('Confirming transaction...');
@@ -178,14 +188,16 @@ const GrowthPage = () => {
       
       // Refresh data after successful deposit
       fetchYieldData();
-      alert(`Successfully deposited ${depositAmount} USDC to your yield account.`);
       setDepositAmount('');
-      setTransactionStatus(null);
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => setTransactionStatus(null), 5000);
       
     } catch (error) {
       console.error('Deposit error:', error);
-      setTransactionStatus(null);
-      alert('Failed to process deposit: ' + error.message);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+      // Clear error message after 5 seconds
+      setTimeout(() => setTransactionStatus(null), 5000);
     } finally {
       setIsLoading(false);
     }
@@ -240,7 +252,17 @@ const GrowthPage = () => {
       }
       
       // Send the transaction
-      const signature = await sendTransaction(transaction, connection);
+      let signature;
+      try {
+        signature = await sendTransaction(transaction, connection);
+      } catch (error) {
+        // Handle user rejection of transaction
+        console.log("Transaction rejected by user");
+        setTransactionStatus('Transaction rejected by user');
+        setTimeout(() => setTransactionStatus(null), 5000); // Clear message after 5 seconds
+        setIsLoading(false);
+        return; // Exit early
+      }
       
       // Wait for confirmation
       setTransactionStatus('Confirming transaction...');
@@ -251,17 +273,28 @@ const GrowthPage = () => {
       
       // Refresh data after successful withdrawal
       fetchYieldData();
-      alert(`Successfully withdrew ${withdrawAmount} USDC from your yield account.`);
       setWithdrawAmount('');
-      setTransactionStatus(null);
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => setTransactionStatus(null), 5000);
       
     } catch (error) {
       console.error('Withdrawal error:', error);
-      setTransactionStatus(null);
-      alert('Failed to process withdrawal: ' + error.message);
+      setTransactionStatus(`Transaction failed: ${error.message}`);
+      // Clear error message after 5 seconds
+      setTimeout(() => setTransactionStatus(null), 5000);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getStatusStyle = (status) => {
+    if (status?.includes('rejected') || status?.includes('failed')) {
+      return 'bg-red-50 text-red-700'; // Error style
+    } else if (status?.includes('confirmed')) {
+      return 'bg-green-50 text-green-700'; // Success style
+    }
+    return 'bg-indigo-50 text-indigo-700'; // Default info style
   };
 
   return (
@@ -423,9 +456,15 @@ const GrowthPage = () => {
                 </div>
                 
                 {transactionStatus && (
-                  <div className="mb-4 p-3 bg-indigo-50 rounded-lg text-sm flex items-center">
-                    <FaSpinner className="mr-2 animate-spin text-indigo-600" />
-                    <p className="text-indigo-700">{transactionStatus}</p>
+                  <div className={`mb-4 p-3 ${getStatusStyle(transactionStatus)} rounded-lg text-sm flex items-center`}>
+                    {transactionStatus.includes('confirmed') ? (
+                      <FaInfoCircle className="mr-2" />
+                    ) : transactionStatus.includes('rejected') || transactionStatus.includes('failed') ? (
+                      <FaInfoCircle className="mr-2" />
+                    ) : (
+                      <FaSpinner className="mr-2 animate-spin" />
+                    )}
+                    <p>{transactionStatus}</p>
                   </div>
                 )}
                 
@@ -481,9 +520,15 @@ const GrowthPage = () => {
                 </div>
                 
                 {transactionStatus && (
-                  <div className="mb-4 p-3 bg-indigo-50 rounded-lg text-sm flex items-center">
-                    <FaSpinner className="mr-2 animate-spin text-indigo-600" />
-                    <p className="text-indigo-700">{transactionStatus}</p>
+                  <div className={`mb-4 p-3 ${getStatusStyle(transactionStatus)} rounded-lg text-sm flex items-center`}>
+                    {transactionStatus.includes('confirmed') ? (
+                      <FaInfoCircle className="mr-2" />
+                    ) : transactionStatus.includes('rejected') || transactionStatus.includes('failed') ? (
+                      <FaInfoCircle className="mr-2" />
+                    ) : (
+                      <FaSpinner className="mr-2 animate-spin" />
+                    )}
+                    <p>{transactionStatus}</p>
                   </div>
                 )}
                 
