@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { Transaction, VersionedTransaction } from '@solana/web3.js';
 import { 
   FaChartLine, 
   FaArrowUp, 
@@ -15,10 +16,12 @@ import {
 } from 'react-icons/fa';
 
 const GrowthPage = () => {
-  const { publicKey } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [transactionStatus, setTransactionStatus] = useState(null);
   
   // Yield data states
   const [yieldRates, setYieldRates] = useState(null);
@@ -121,6 +124,7 @@ const GrowthPage = () => {
     
     try {
       setIsLoading(true);
+      setTransactionStatus('Preparing transaction...');
       
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
       const response = await fetch(`${apiUrl}/api/yield/deposit`, {
@@ -136,16 +140,51 @@ const GrowthPage = () => {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to process deposit');
+        throw new Error(errorData.message || 'Failed to prepare deposit transaction');
       }
+      
+      // Get the serialized transaction from the response
+      const responseData = await response.json();
+      const serializedTx = responseData.transaction;
+      
+      if (!serializedTx) {
+        throw new Error('No transaction data received from server');
+      }
+      
+      setTransactionStatus('Processing transaction...');
+      
+      // Deserialize and send the transaction - handle both versioned and legacy transactions
+      const txBuffer = Buffer.from(serializedTx, "base64");
+      
+      // Try to deserialize as a versioned transaction first
+      let transaction;
+      try {
+        transaction = VersionedTransaction.deserialize(txBuffer);
+      } catch (error) {
+        // If that fails, try as a legacy transaction
+        console.log("Failed to deserialize as VersionedTransaction, trying legacy format");
+        transaction = Transaction.from(txBuffer);
+      }
+      
+      // Send the transaction
+      const signature = await sendTransaction(transaction, connection);
+      
+      // Wait for confirmation
+      setTransactionStatus('Confirming transaction...');
+      await connection.confirmTransaction(signature);
+      
+      setTransactionStatus('Transaction confirmed!');
+      console.log("Transaction sent, signature:", signature);
       
       // Refresh data after successful deposit
       fetchYieldData();
       alert(`Successfully deposited ${depositAmount} USDC to your yield account.`);
       setDepositAmount('');
+      setTransactionStatus(null);
       
     } catch (error) {
       console.error('Deposit error:', error);
+      setTransactionStatus(null);
       alert('Failed to process deposit: ' + error.message);
     } finally {
       setIsLoading(false);
@@ -158,6 +197,7 @@ const GrowthPage = () => {
     
     try {
       setIsLoading(true);
+      setTransactionStatus('Preparing transaction...');
       
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
       const response = await fetch(`${apiUrl}/api/yield/withdraw`, {
@@ -173,16 +213,51 @@ const GrowthPage = () => {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to process withdrawal');
+        throw new Error(errorData.message || 'Failed to prepare withdrawal transaction');
       }
+      
+      // Get the serialized transaction from the response
+      const responseData = await response.json();
+      const serializedTx = responseData.transaction;
+      
+      if (!serializedTx) {
+        throw new Error('No transaction data received from server');
+      }
+      
+      setTransactionStatus('Processing transaction...');
+      
+      // Deserialize and send the transaction - handle both versioned and legacy transactions
+      const txBuffer = Buffer.from(serializedTx, "base64");
+      
+      // Try to deserialize as a versioned transaction first
+      let transaction;
+      try {
+        transaction = VersionedTransaction.deserialize(txBuffer);
+      } catch (error) {
+        // If that fails, try as a legacy transaction
+        console.log("Failed to deserialize as VersionedTransaction, trying legacy format");
+        transaction = Transaction.from(txBuffer);
+      }
+      
+      // Send the transaction
+      const signature = await sendTransaction(transaction, connection);
+      
+      // Wait for confirmation
+      setTransactionStatus('Confirming transaction...');
+      await connection.confirmTransaction(signature);
+      
+      setTransactionStatus('Transaction confirmed!');
+      console.log("Transaction sent, signature:", signature);
       
       // Refresh data after successful withdrawal
       fetchYieldData();
       alert(`Successfully withdrew ${withdrawAmount} USDC from your yield account.`);
       setWithdrawAmount('');
+      setTransactionStatus(null);
       
     } catch (error) {
       console.error('Withdrawal error:', error);
+      setTransactionStatus(null);
       alert('Failed to process withdrawal: ' + error.message);
     } finally {
       setIsLoading(false);
@@ -347,6 +422,13 @@ const GrowthPage = () => {
                   </p>
                 </div>
                 
+                {transactionStatus && (
+                  <div className="mb-4 p-3 bg-indigo-50 rounded-lg text-sm flex items-center">
+                    <FaSpinner className="mr-2 animate-spin text-indigo-600" />
+                    <p className="text-indigo-700">{transactionStatus}</p>
+                  </div>
+                )}
+                
                 <button
                   type="submit"
                   className="w-full bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
@@ -397,6 +479,13 @@ const GrowthPage = () => {
                     Withdrawals are processed immediately with no fees. Maximum amount: <strong>{yieldInfo.totalDeposited.toLocaleString()} USDC</strong>
                   </p>
                 </div>
+                
+                {transactionStatus && (
+                  <div className="mb-4 p-3 bg-indigo-50 rounded-lg text-sm flex items-center">
+                    <FaSpinner className="mr-2 animate-spin text-indigo-600" />
+                    <p className="text-indigo-700">{transactionStatus}</p>
+                  </div>
+                )}
                 
                 <button
                   type="submit"
