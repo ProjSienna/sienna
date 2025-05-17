@@ -20,8 +20,10 @@ const GrowthPage = () => {
   const { connection } = useConnection();
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [transactionStatus, setTransactionStatus] = useState(null);
+  const [isLoadingDeposit, setIsLoadingDeposit] = useState(false);
+  const [isLoadingWithdraw, setIsLoadingWithdraw] = useState(false);
+  const [depositStatus, setDepositStatus] = useState(null);
+  const [withdrawStatus, setWithdrawStatus] = useState(null);
   
   // Yield data states
   const [yieldRates, setYieldRates] = useState(null);
@@ -123,8 +125,8 @@ const GrowthPage = () => {
     if (!depositAmount) return;
     
     try {
-      setIsLoading(true);
-      setTransactionStatus('Preparing transaction...');
+      setIsLoadingDeposit(true);
+      setDepositStatus('Preparing transaction...');
       
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
       const response = await fetch(`${apiUrl}/api/yield/deposit`, {
@@ -138,20 +140,25 @@ const GrowthPage = () => {
         }),
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to prepare deposit transaction');
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (error) {
+        throw new Error('Invalid response from server');
       }
       
-      // Get the serialized transaction from the response
-      const responseData = await response.json();
-      const serializedTx = responseData.transaction;
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Failed to prepare deposit transaction');
+      }
+      
+      // Check for transaction in either field name
+      const serializedTx = responseData.transaction || responseData.serializedTransaction;
       
       if (!serializedTx) {
         throw new Error('No transaction data received from server');
       }
       
-      setTransactionStatus('Processing transaction...');
+      setDepositStatus('Processing transaction...');
       
       // Deserialize and send the transaction - handle both versioned and legacy transactions
       const txBuffer = Buffer.from(serializedTx, "base64");
@@ -160,46 +167,63 @@ const GrowthPage = () => {
       let transaction;
       try {
         transaction = VersionedTransaction.deserialize(txBuffer);
+        console.log("Successfully deserialized as VersionedTransaction");
       } catch (error) {
         // If that fails, try as a legacy transaction
-        console.log("Failed to deserialize as VersionedTransaction, trying legacy format");
-        transaction = Transaction.from(txBuffer);
+        console.log("Failed to deserialize as VersionedTransaction, trying legacy format", error);
+        try {
+          transaction = Transaction.from(txBuffer);
+          console.log("Successfully deserialized as legacy Transaction");
+        } catch (txError) {
+          console.error("Failed to deserialize transaction:", txError);
+          throw new Error('Failed to process transaction data');
+        }
       }
       
       // Send the transaction
       let signature;
       try {
         signature = await sendTransaction(transaction, connection);
+        console.log("Transaction sent with signature:", signature);
       } catch (error) {
         // Handle user rejection of transaction
-        console.log("Transaction rejected by user");
-        setTransactionStatus('Transaction rejected by user');
-        setTimeout(() => setTransactionStatus(null), 5000); // Clear message after 5 seconds
-        setIsLoading(false);
+        console.log("Transaction rejected by user:", error);
+        setDepositStatus('Transaction rejected by user');
+        setTimeout(() => setDepositStatus(null), 5000); // Clear message after 5 seconds
+        setIsLoadingDeposit(false);
         return; // Exit early
       }
       
       // Wait for confirmation
-      setTransactionStatus('Confirming transaction...');
-      await connection.confirmTransaction(signature);
-      
-      setTransactionStatus('Transaction confirmed!');
-      console.log("Transaction sent, signature:", signature);
-      
-      // Refresh data after successful deposit
-      fetchYieldData();
-      setDepositAmount('');
-      
-      // Clear success message after 5 seconds
-      setTimeout(() => setTransactionStatus(null), 5000);
+      setDepositStatus('Confirming transaction...');
+      try {
+        const confirmation = await connection.confirmTransaction(signature);
+        
+        if (confirmation.value && confirmation.value.err) {
+          throw new Error('Transaction failed on the blockchain');
+        }
+        
+        setDepositStatus('Transaction confirmed!');
+        console.log("Transaction confirmed:", confirmation);
+        
+        // Refresh data after successful deposit
+        fetchYieldData();
+        setDepositAmount('');
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => setDepositStatus(null), 5000);
+      } catch (confirmError) {
+        console.error("Confirmation error:", confirmError);
+        throw new Error('Failed to confirm transaction');
+      }
       
     } catch (error) {
       console.error('Deposit error:', error);
-      setTransactionStatus(`Transaction failed: ${error.message}`);
+      setDepositStatus(`Transaction failed: ${error.message}`);
       // Clear error message after 5 seconds
-      setTimeout(() => setTransactionStatus(null), 5000);
+      setTimeout(() => setDepositStatus(null), 5000);
     } finally {
-      setIsLoading(false);
+      setIsLoadingDeposit(false);
     }
   };
 
@@ -208,8 +232,8 @@ const GrowthPage = () => {
     if (!withdrawAmount) return;
     
     try {
-      setIsLoading(true);
-      setTransactionStatus('Preparing transaction...');
+      setIsLoadingWithdraw(true);
+      setWithdrawStatus('Preparing transaction...');
       
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
       const response = await fetch(`${apiUrl}/api/yield/withdraw`, {
@@ -223,20 +247,25 @@ const GrowthPage = () => {
         }),
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to prepare withdrawal transaction');
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (error) {
+        throw new Error('Invalid response from server');
       }
       
-      // Get the serialized transaction from the response
-      const responseData = await response.json();
-      const serializedTx = responseData.transaction;
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Failed to prepare withdrawal transaction');
+      }
+      
+      // Check for transaction in either field name
+      const serializedTx = responseData.transaction || responseData.serializedTransaction;
       
       if (!serializedTx) {
         throw new Error('No transaction data received from server');
       }
       
-      setTransactionStatus('Processing transaction...');
+      setWithdrawStatus('Processing transaction...');
       
       // Deserialize and send the transaction - handle both versioned and legacy transactions
       const txBuffer = Buffer.from(serializedTx, "base64");
@@ -245,46 +274,63 @@ const GrowthPage = () => {
       let transaction;
       try {
         transaction = VersionedTransaction.deserialize(txBuffer);
+        console.log("Successfully deserialized as VersionedTransaction");
       } catch (error) {
         // If that fails, try as a legacy transaction
-        console.log("Failed to deserialize as VersionedTransaction, trying legacy format");
-        transaction = Transaction.from(txBuffer);
+        console.log("Failed to deserialize as VersionedTransaction, trying legacy format", error);
+        try {
+          transaction = Transaction.from(txBuffer);
+          console.log("Successfully deserialized as legacy Transaction");
+        } catch (txError) {
+          console.error("Failed to deserialize transaction:", txError);
+          throw new Error('Failed to process transaction data');
+        }
       }
       
       // Send the transaction
       let signature;
       try {
         signature = await sendTransaction(transaction, connection);
+        console.log("Transaction sent with signature:", signature);
       } catch (error) {
         // Handle user rejection of transaction
-        console.log("Transaction rejected by user");
-        setTransactionStatus('Transaction rejected by user');
-        setTimeout(() => setTransactionStatus(null), 5000); // Clear message after 5 seconds
-        setIsLoading(false);
+        console.log("Transaction rejected by user:", error);
+        setWithdrawStatus('Transaction rejected by user');
+        setTimeout(() => setWithdrawStatus(null), 5000); // Clear message after 5 seconds
+        setIsLoadingWithdraw(false);
         return; // Exit early
       }
       
       // Wait for confirmation
-      setTransactionStatus('Confirming transaction...');
-      await connection.confirmTransaction(signature);
-      
-      setTransactionStatus('Transaction confirmed!');
-      console.log("Transaction sent, signature:", signature);
-      
-      // Refresh data after successful withdrawal
-      fetchYieldData();
-      setWithdrawAmount('');
-      
-      // Clear success message after 5 seconds
-      setTimeout(() => setTransactionStatus(null), 5000);
+      setWithdrawStatus('Confirming transaction...');
+      try {
+        const confirmation = await connection.confirmTransaction(signature);
+        
+        if (confirmation.value && confirmation.value.err) {
+          throw new Error('Transaction failed on the blockchain');
+        }
+        
+        setWithdrawStatus('Transaction confirmed!');
+        console.log("Transaction confirmed:", confirmation);
+        
+        // Refresh data after successful withdrawal
+        fetchYieldData();
+        setWithdrawAmount('');
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => setWithdrawStatus(null), 5000);
+      } catch (confirmError) {
+        console.error("Confirmation error:", confirmError);
+        throw new Error('Failed to confirm transaction');
+      }
       
     } catch (error) {
       console.error('Withdrawal error:', error);
-      setTransactionStatus(`Transaction failed: ${error.message}`);
+      setWithdrawStatus(`Transaction failed: ${error.message}`);
       // Clear error message after 5 seconds
-      setTimeout(() => setTransactionStatus(null), 5000);
+      setTimeout(() => setWithdrawStatus(null), 5000);
     } finally {
-      setIsLoading(false);
+      setIsLoadingWithdraw(false);
     }
   };
 
@@ -455,25 +501,25 @@ const GrowthPage = () => {
                   </p>
                 </div>
                 
-                {transactionStatus && (
-                  <div className={`mb-4 p-3 ${getStatusStyle(transactionStatus)} rounded-lg text-sm flex items-center`}>
-                    {transactionStatus.includes('confirmed') ? (
+                {depositStatus && (
+                  <div className={`mb-4 p-3 ${getStatusStyle(depositStatus)} rounded-lg text-sm flex items-center`}>
+                    {depositStatus.includes('confirmed') ? (
                       <FaInfoCircle className="mr-2" />
-                    ) : transactionStatus.includes('rejected') || transactionStatus.includes('failed') ? (
+                    ) : depositStatus.includes('rejected') || depositStatus.includes('failed') ? (
                       <FaInfoCircle className="mr-2" />
                     ) : (
                       <FaSpinner className="mr-2 animate-spin" />
                     )}
-                    <p>{transactionStatus}</p>
+                    <p>{depositStatus}</p>
                   </div>
                 )}
                 
                 <button
                   type="submit"
                   className="w-full bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
-                  disabled={isLoading}
+                  disabled={isLoadingDeposit}
                 >
-                  {isLoading ? (
+                  {isLoadingDeposit ? (
                     <>
                       <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
                       <span>Processing...</span>
@@ -519,25 +565,25 @@ const GrowthPage = () => {
                   </p>
                 </div>
                 
-                {transactionStatus && (
-                  <div className={`mb-4 p-3 ${getStatusStyle(transactionStatus)} rounded-lg text-sm flex items-center`}>
-                    {transactionStatus.includes('confirmed') ? (
+                {withdrawStatus && (
+                  <div className={`mb-4 p-3 ${getStatusStyle(withdrawStatus)} rounded-lg text-sm flex items-center`}>
+                    {withdrawStatus.includes('confirmed') ? (
                       <FaInfoCircle className="mr-2" />
-                    ) : transactionStatus.includes('rejected') || transactionStatus.includes('failed') ? (
+                    ) : withdrawStatus.includes('rejected') || withdrawStatus.includes('failed') ? (
                       <FaInfoCircle className="mr-2" />
                     ) : (
                       <FaSpinner className="mr-2 animate-spin" />
                     )}
-                    <p>{transactionStatus}</p>
+                    <p>{withdrawStatus}</p>
                   </div>
                 )}
                 
                 <button
                   type="submit"
                   className="w-full bg-secondary text-white py-3 px-4 rounded-lg hover:bg-secondary/90 transition-colors flex items-center justify-center"
-                  disabled={isLoading}
+                  disabled={isLoadingWithdraw}
                 >
-                  {isLoading ? (
+                  {isLoadingWithdraw ? (
                     <>
                       <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
                       <span>Processing...</span>
