@@ -28,11 +28,11 @@ const GrowthPage = () => {
 
   // Calculate derived yield values
   const yieldInfo = {
-    apy: yieldRates?.current_apy || 5.2,
-    totalDeposited: yieldAccount?.total_deposited || 15000,
-    earnedInterest: yieldAccount?.earned_interest || 342,
-    estimatedAnnual: ((yieldAccount?.total_deposited || 15000) * (yieldRates?.current_apy || 5.2)) / 100,
-    lastMonthEarned: yieldAccount?.last_month_earned || 65
+    apy: yieldRates?.current_apy || 0,
+    totalDeposited: yieldAccount?.total_deposited || 0,
+    earnedInterest: yieldAccount?.earned_interest || 0,
+    estimatedAnnual: ((yieldAccount?.total_deposited || 0) * (yieldRates?.current_apy || 0)) / 100,
+    lastMonthEarned: yieldAccount?.last_month_earned || 0
   };
 
   // Move useEffect before the conditional return
@@ -82,9 +82,9 @@ const GrowthPage = () => {
         // If account doesn't exist yet, that's okay
         if (accountResponse.status === 404) {
           setYieldAccount({
-            total_deposited: 15000, // Default values as requested
-            earned_interest: 342,
-            last_month_earned: 65
+            total_deposited: 0, // Default values as requested
+            earned_interest: 0,
+            last_month_earned: 0
           });
         } else {
           throw new Error('Failed to fetch yield account');
@@ -94,9 +94,9 @@ const GrowthPage = () => {
         
         // Simple mapping to our required fields
         setYieldAccount({
-          total_deposited: accountData.totalUsdValue || 15000,
-          earned_interest: accountData.totalInterestEarned || 342,
-          last_month_earned: accountData.lastMonthEarned || 65
+          total_deposited: accountData.totalUsdValue || 0,
+          earned_interest: accountData.totalInterestEarned || 0,
+          last_month_earned: accountData.lastMonthEarned || 0
         });
       }
     } catch (err) {
