@@ -389,17 +389,17 @@ const GrowthPage = () => {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-white border border-primary/20 rounded-lg p-4">
                       <p className="text-sm text-gray-600 mb-1">Total Deposited</p>
-                      <p className="text-2xl text-primary font-semibold">{yieldInfo.totalDeposited.toLocaleString()} USDC</p>
+                      <p className="text-2xl text-primary font-semibold">{(yieldInfo.totalDeposited || 0).toLocaleString()} USDC</p>
                     </div>
                     
                     <div className="bg-white border border-secondary/20 rounded-lg p-4">
                       <p className="text-sm text-gray-600 mb-1">Current APY</p>
-                      <p className="text-2xl text-secondary font-semibold">{yieldInfo.apy.toFixed(1)}%</p>
+                      <p className="text-2xl text-secondary font-semibold">{(yieldInfo.apy || 0).toFixed(2)}%</p>
                     </div>
                     
                     <div className="bg-white border border-blue-300 rounded-lg p-4">
                       <p className="text-sm text-gray-600 mb-1">Estimated Annual</p>
-                      <p className="text-2xl text-blue-600 font-semibold">{yieldInfo.estimatedAnnual.toLocaleString()} USDC</p>
+                      <p className="text-2xl text-blue-600 font-semibold">{(yieldInfo.estimatedAnnual || 0).toLocaleString()} USDC</p>
                     </div>
                   </div>
                   
@@ -410,7 +410,7 @@ const GrowthPage = () => {
                       <div>
                         <p className="text-sm text-gray-600 mb-1">Total Earned</p>
                         <div className="flex items-center">
-                          <p className="text-xl font-semibold text-emerald-600 mr-2">{yieldInfo.earnedInterest.toLocaleString()} USDC</p>
+                          <p className="text-xl font-semibold text-emerald-600 mr-2">{(yieldInfo.earnedInterest || 0).toLocaleString()} USDC</p>
                           <span className="text-xs text-gray-500">since you started</span>
                         </div>
                       </div>
@@ -418,7 +418,7 @@ const GrowthPage = () => {
                       <div>
                         <p className="text-sm text-gray-600 mb-1">Last Month</p>
                         <div className="flex items-center">
-                          <p className="text-xl font-semibold text-emerald-600 mr-2">{yieldInfo.lastMonthEarned.toLocaleString()} USDC</p>
+                          <p className="text-xl font-semibold text-emerald-600 mr-2">{(yieldInfo.lastMonthEarned || 0).toLocaleString()} USDC</p>
                           <span className="text-xs text-gray-500">earned in interest</span>
                         </div>
                       </div>
@@ -497,7 +497,7 @@ const GrowthPage = () => {
                 <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700 flex items-start">
                   <FaInfoCircle className="mr-2 mt-1 flex-shrink-0" />
                   <p>
-                    Deposits start earning interest immediately. Current APY: <strong>{yieldInfo.apy.toFixed(1)}%</strong>
+                    Deposits start earning interest immediately. Current APY: <strong>{(yieldInfo.apy || 0).toFixed(1)}%</strong>
                   </p>
                 </div>
                 
@@ -561,7 +561,7 @@ const GrowthPage = () => {
                 <div className="mb-4 p-3 bg-amber-50 rounded-lg text-sm text-amber-700 flex items-start">
                   <FaInfoCircle className="mr-2 mt-1 flex-shrink-0" />
                   <p>
-                    Withdrawals are processed immediately with no fees. Maximum amount: <strong>{yieldInfo.totalDeposited.toLocaleString()} USDC</strong>
+                    Withdrawals are processed immediately with no fees. Maximum amount: <strong>{(yieldInfo.totalDeposited || 0).toLocaleString()} USDC</strong>
                   </p>
                 </div>
                 
