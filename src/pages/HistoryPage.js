@@ -34,7 +34,7 @@ const HistoryPage = () => {
   });
 
   const exportTransactions = () => {
-    // Format transactions for CSV
+    // Format transactions for CSV export
     const csvData = filteredTransactions.map(tx => {
       const isOutgoing = publicKey && tx.senderWallet === publicKey.toString();
       const date = new Date(tx.timestamp).toLocaleString();
