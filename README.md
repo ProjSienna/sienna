@@ -180,5 +180,5 @@ This project is proprietary software. Unauthorized use, modification, or distrib
 
 ## Contact
 
-- Email: support@projectsienna.xyz
+- Email: contact@projectsienna.xyz
 - Twitter: [@project_sienna](https://x.com/project_sienna)

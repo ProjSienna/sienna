@@ -65,11 +65,11 @@ function App() {
                           <span className="text-sm">project_sienna</span>
                         </a>
                         <a 
-                          href="mailto:support@projectsienna.xyz" 
+                          href="mailto:contact@projectsienna.xyz" 
                           className="hover:text-primary transition-colors flex items-center gap-1 text-gray-600 w-full justify-center md:justify-start"
                         >
                           <FaEnvelope className="text-lg" /> 
-                          <span className="text-sm">support@projectsienna.xyz</span>
+                          <span className="text-sm">contact@projectsienna.xyz</span>
                         </a>
                       </div>
                     </div>
