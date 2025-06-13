@@ -1,13 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FaWallet, FaCopy, FaSignOutAlt, FaTimes } from 'react-icons/fa';
 
 const CustomWalletButton = ({ className = '' }) => {
   const { publicKey, wallet, wallets, select, connect, disconnect, connecting, disconnecting } = useWallet();
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [walletModalVisible, setWalletModalVisible] = useState(false);
+  const [previousRoute, setPreviousRoute] = useState(null);
   const dropdownRef = useRef(null);
   const modalRef = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Format wallet address for display
   const formatWalletAddress = (address) => {
@@ -44,6 +48,8 @@ const CustomWalletButton = ({ className = '' }) => {
   // Handle button click
   const handleButtonClick = async () => {
     if (!publicKey) {
+      // Store current route before opening wallet modal
+      setPreviousRoute(location.pathname);
       setWalletModalVisible(true);
     } else {
       setDropdownVisible(!dropdownVisible);
@@ -68,6 +74,11 @@ const CustomWalletButton = ({ className = '' }) => {
       select(walletAdapter.name);
       await connect();
       setWalletModalVisible(false);
+      
+      // Redirect to previous route if it exists and is not the current route
+      if (previousRoute && previousRoute !== location.pathname) {
+        navigate(previousRoute);
+      }
     } catch (error) {
       console.error('Connection error:', error);
     }
