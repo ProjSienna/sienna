@@ -126,7 +126,7 @@ const RequestPaymentForm = ({ onClose }) => {
       }
       
       // Format request body to match the API example
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://api.projectsienna.xyz';
       const response = await fetch(`${apiUrl}/api/transactions`, {
         method: 'POST',
         headers: {

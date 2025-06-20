@@ -12,6 +12,7 @@ import PayeesPage from './pages/PayeesPage';
 import PayrollPage from './pages/PayrollPage';
 import PaymentPage from './pages/PaymentPage';
 import PayRequestPage from './pages/PayRequestPage';
+import InvoicesPage from './pages/InvoicesPage';
 import ApiPage from './pages/ApiPage';
 import PaymentGatewayPage from './pages/PaymentGatewayPage';
 import FinancialInsightPage from './pages/FinancialInsightPage';
@@ -38,6 +39,7 @@ function App() {
                     <Route path="/history" element={<PayeesPage initialTab="history" />} />
                     <Route path="/pay" element={<PaymentPage />} />
                     <Route path="/pay-request" element={<PayRequestPage />} />
+                    <Route path="/invoices" element={<InvoicesPage />} />
                     <Route path="/api" element={<ApiPage />} />
                     <Route path="/payment-gateway" element={<PaymentGatewayPage />} />
                   </Routes>

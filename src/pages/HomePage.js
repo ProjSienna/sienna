@@ -428,18 +428,18 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                     </div>
                   </Link>
 
-                  <button
-                    onClick={() => {/* Handle payment link creation */}}
+                  <Link
+                    to="/invoices"
                     className="w-full flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
                   >
                     <div className="bg-secondary bg-opacity-10 p-2 rounded-md">
-                      <FaArrowDown className="text-secondary" />
+                      <FaFileInvoiceDollar className="text-secondary" />
                     </div>
                     <div className="ml-3 text-left">
                       <span className="block font-medium">Send Invoice</span>
                       <span className="text-xs text-gray-500">Create and send an invoice to a recipient</span>
                     </div>
-                  </button>
+                  </Link>
 
                   {/* Payroll Divider */}
                   <div className="relative py-3">

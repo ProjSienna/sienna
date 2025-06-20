@@ -68,7 +68,7 @@ const WalletDetails = () => {
     setIsLoadingYield(true);
     setYieldError(null);
 
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://api.projectsienna.xyz';
     
     try {
       // Fetch yield rates
@@ -155,7 +155,7 @@ const WalletDetails = () => {
     if (!publicKey || !amount) return;
     
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://api.projectsienna.xyz';
       const response = await fetch(`${apiUrl}/api/yield/deposit`, {
         method: 'POST',
         headers: {
