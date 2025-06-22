@@ -11,11 +11,6 @@ const InvoicesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // If user is not authenticated, redirect to landing page
-  if (!publicKey) {
-    return <Navigate to="/landing" />;
-  }
-
   // Fetch requested payments on component mount
   useEffect(() => {
     const fetchRequestedPayments = async () => {
@@ -44,6 +39,11 @@ const InvoicesPage = () => {
 
     fetchRequestedPayments();
   }, [publicKey]);
+
+  // If user is not authenticated, redirect to landing page
+  if (!publicKey) {
+    return <Navigate to="/landing" />;
+  }
 
   // Format date to readable format
   const formatDate = (dateString) => {
