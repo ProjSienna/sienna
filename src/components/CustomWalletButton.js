@@ -75,9 +75,11 @@ const CustomWalletButton = ({ className = '' }) => {
       await connect();
       setWalletModalVisible(false);
       
-      // Redirect to previous route if it exists and is not the current route
-      if (previousRoute && previousRoute !== location.pathname) {
+      // Never redirect to landing page after login - always go to home instead
+      if (previousRoute && previousRoute !== location.pathname && previousRoute !== '/landing') {
         navigate(previousRoute);
+      } else {
+        navigate('/');
       }
     } catch (error) {
       console.error('Connection error:', error);
