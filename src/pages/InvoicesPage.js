@@ -25,7 +25,8 @@ const InvoicesPage = () => {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`https://api.projectsienna.xyz/api/transactions/requested/${publicKey.toString()}`);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://api.projectsienna.xyz';
+        const response = await fetch(`${apiUrl}/api/transactions/requested/${publicKey.toString()}`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch requested payments: ${response.status} ${response.statusText}`);
