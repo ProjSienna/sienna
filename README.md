@@ -4,7 +4,6 @@
 
 A modern, user-friendly financial platform enabling businesses, freelancers, and entrepreneurs to **send, request, and manage USDC payments** on the Solana blockchain with speed, low fees, and advanced financial tools.
 
----
 
 ## 🔹 Key Features
 
@@ -29,9 +28,9 @@ A modern, user-friendly financial platform enabling businesses, freelancers, and
 - **Email Notifications**: Real-time alerts for payments, invoices, and reminders
 - **Mobile-Optimized**: Fully responsive for desktop and mobile browsers
 
----
 
 ## 🔹 Getting Started
+
 The project is now under **private development**. For collaboration, licensing, or early access:
 
 📩 **Contact:** **shan@projectsienna.xyz**
@@ -39,6 +38,7 @@ The project is now under **private development**. For collaboration, licensing, 
 ---
 
 ## 🔹 Why Sienna?
+
 - **Solana Speed**: Near-instant, low-cost USDC transactions
 - **Enterprise-Ready**: Scalable for freelancers, SMBs, and Web3-native businesses
 - **DeFi Integration**: Earn yield while managing cash flow
@@ -50,8 +50,6 @@ The project is now under **private development**. For collaboration, licensing, 
 - **Blockchain**: Solana Web3.js and SPL Token for token transfers
 - **Wallet**: Solana Wallet Adapter for wallet connectivity
 - **Storage**: Context API with local persistence
-
-## Getting Started
 
 ### Prerequisites
 
