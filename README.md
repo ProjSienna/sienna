@@ -1,23 +1,47 @@
 # Sienna - USDC Payment Platform on Solana
 
-A modern, user-friendly financial platform that enables businesses, freelancers, and entrepreneurs to send and request USDC payments on the Solana blockchain.
+**🚨 Update:** Active development has moved to a **private repository**. For access or inquiries, contact **shan@projectsienna.xyz**.
 
-## Features
+A modern, user-friendly financial platform enabling businesses, freelancers, and entrepreneurs to **send, request, and manage USDC payments** on the Solana blockchain with speed, low fees, and advanced financial tools.
 
-- **Wallet Integration**: Seamless connectivity with Solana wallets (Phantom, Solflare)
-- **Payee Management**: Add, edit, and organize recipients with comprehensive information
-- **Single & Batch Payments**: Send USDC to individual recipients or run payrolls for multiple payees
-- **Invoice Generation**: Create and manage professional invoices with automatic payment tracking
-- **Payment Requests**: Generate and send professional payment requests via email
-- **Financial Insights**: Track payment activity and analyze financial metrics
-- **Transaction History**: View, search, and export your payment history
-- **Yield Generation**: Earn yield on idle USDC balances through integrated DeFi protocols
-- **Growth Analytics**: Monitor business growth metrics and trends
-- **Email Notifications**: Automated email alerts for payment receipts, requests, and reminders
-- **API Access**: Integrate payments into your own systems and workflows
-- **Payment Gateway**: Accept USDC payments directly on your website or application
-- **Custom Reports**: Generate detailed financial reports for accounting and tax purposes
-- **Mobile Responsive**: Fully functional on both desktop and mobile devices
+---
+
+## 🔹 Key Features
+
+### 💳 Wallet & Payments
+- **Wallet Integration**: Seamless connectivity with Solana wallets (Phantom, Solflare, Backpack, etc.)
+- **Single & Batch Payments**: Send USDC to individuals or process bulk payouts (e.g., payroll, vendor payments)
+- **Payment Requests**: Generate and send professional payment requests via email or shareable links
+- **Invoice Management**: Create, track, and manage invoices with automatic payment reconciliation
+
+### 📊 Financial Tools & Analytics
+- **Yield Generation**: Earn interest on idle USDC via integrated DeFi protocols (e.g., Marinade, Kamino)
+- **Growth Analytics**: Monitor transaction volume, cash flow trends, and business performance
+- **Custom Reports**: Export detailed financial records for accounting, taxes, and audits
+
+### ⚙️ Business Integrations
+- **API Access**: Programmatically send, request, and track payments via Sienna's REST/Webhook API
+- **Payment Gateway**: Embed USDC payment processing into websites, apps, or SaaS platforms
+- **Web3 Commerce**: Accept Solana USDC payments for e-commerce, subscriptions, or services
+
+### 📱 User Experience
+- **Transaction History**: Search, filter, and export full payment logs
+- **Email Notifications**: Real-time alerts for payments, invoices, and reminders
+- **Mobile-Optimized**: Fully responsive for desktop and mobile browsers
+
+---
+
+## 🔹 Getting Started
+The project is now under **private development**. For collaboration, licensing, or early access:
+
+📩 **Contact:** **shan@projectsienna.xyz**
+
+---
+
+## 🔹 Why Sienna?
+- **Solana Speed**: Near-instant, low-cost USDC transactions
+- **Enterprise-Ready**: Scalable for freelancers, SMBs, and Web3-native businesses
+- **DeFi Integration**: Earn yield while managing cash flow
 
 ## Technology Stack
 
