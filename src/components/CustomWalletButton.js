@@ -13,6 +13,13 @@ const CustomWalletButton = ({ className = '' }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Persist last visited route in localStorage on every route change
+  useEffect(() => {
+    if (location.pathname !== '/landing') {
+      localStorage.setItem('lastVisitedRoute', location.pathname);
+    }
+  }, [location.pathname]);
+
   // Format wallet address for display
   const formatWalletAddress = (address) => {
     if (!address) return '';
@@ -48,8 +55,8 @@ const CustomWalletButton = ({ className = '' }) => {
   // Handle button click
   const handleButtonClick = async () => {
     if (!publicKey) {
-      // Store current route before opening wallet modal
-      setPreviousRoute(location.pathname);
+      // Store current full route (pathname + search + hash) before opening wallet modal
+      setPreviousRoute(location.pathname + location.search + location.hash);
       setWalletModalVisible(true);
     } else {
       setDropdownVisible(!dropdownVisible);
@@ -75,8 +82,8 @@ const CustomWalletButton = ({ className = '' }) => {
       await connect();
       setWalletModalVisible(false);
       
-      // Never redirect to landing page after login - always go to home instead
-      if (previousRoute && previousRoute !== location.pathname && previousRoute !== '/landing') {
+      // After login, redirect to the full previous URL if available, else home
+      if (previousRoute && previousRoute !== '/landing') {
         navigate(previousRoute);
       } else {
         navigate('/');

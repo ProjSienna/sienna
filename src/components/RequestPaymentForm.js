@@ -430,7 +430,7 @@ const RequestPaymentForm = ({ onClose }) => {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Wallet Address
+              Wallet Address (optional)
             </label>
             <input
               type="text"
