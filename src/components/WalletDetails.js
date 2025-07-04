@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { formatWalletAddress } from '../utils/solana';
 import { fetchWalletBalances } from '../utils/web3';
-import { FaCheckCircle, FaTimesCircle, FaSpinner, FaCopy, FaExternalLinkAlt, FaArrowUp, FaArrowDown, FaPercent, FaSync, FaWallet, FaChartLine } from 'react-icons/fa';
+import { FaCheckCircle, FaExternalLinkAlt, FaPercent, FaSync, FaWallet, FaChartLine } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 /**

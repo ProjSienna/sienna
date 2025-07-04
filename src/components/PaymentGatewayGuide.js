@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTimes, FaCopy, FaCheck } from 'react-icons/fa';
+import { FaCopy, FaCheck } from 'react-icons/fa';
 
 const PaymentGatewayGuide = ({ onClose }) => {
   const [copiedIndex, setCopiedIndex] = React.useState(null);

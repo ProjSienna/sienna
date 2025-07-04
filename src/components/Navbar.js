@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaUsers, FaCode, FaChartLine, FaMoneyBillWave } from 'react-icons/fa';
+import { FaHome, FaCode, FaChartLine, FaMoneyBillWave } from 'react-icons/fa';
 import CustomWalletButton from './CustomWalletButton';
 
 const Navbar = () => {
