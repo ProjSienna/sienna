@@ -117,18 +117,97 @@ const InvoiceForm = () => {
         throw new Error('Please add at least one invoice item');
       }
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!publicKey) {
+        throw new Error('Wallet not connected');
+      }
 
-      // Mock success response
-      const invoiceData = {
-        ...formData,
-        total: calculateTotal(),
-        status: 'sent',
-        createdAt: new Date().toISOString()
+      // Prepare invoice data in the expected format
+      const invoicePayload = {
+        businessName: formData.businessInfo.name,
+        invoiceData: {
+          invoice_info: {
+            currency: "USDC",
+            tax_rate: 0,
+            payment_terms: formData.terms || "Net 30",
+            invoice_number: formData.invoiceNumber,
+            issue_date: formData.issueDate,
+            due_date: formData.dueDate
+          },
+          business_info: {
+            name: formData.businessInfo.name,
+            address: {
+              street: formData.businessInfo.address || "",
+              city: "",
+              state: "",
+              zip: "",
+              country: ""
+            },
+            contact: {
+              email: formData.businessInfo.email || "",
+              phone: "",
+              website: ""
+            },
+            tax_id: formData.businessInfo.taxId || ""
+          },
+          client_info: {
+            name: formData.clientInfo.name,
+            address: {
+              street: formData.clientInfo.address || "",
+              city: "",
+              state: "",
+              zip: "",
+              country: ""
+            },
+            contact: {
+              name: formData.clientInfo.name,
+              email: formData.clientInfo.email,
+              phone: ""
+            }
+          },
+          line_items: formData.items.map(item => ({
+            description: item.description,
+            quantity: parseFloat(item.quantity) || 1,
+            unit_price: parseFloat(item.rate) || 0,
+            amount: parseFloat(item.amount) || 0,
+            notes: ""
+          })),
+          summary: {
+            subtotal: parseFloat(calculateTotal()),
+            tax_amount: 0.00,
+            discount: {
+              description: "",
+              amount: 0.00
+            },
+            total_due: parseFloat(calculateTotal())
+          },
+          payment_info: {
+            crypto_wallet: {
+              wallet_address: publicKey.toString(),
+              currency: "USDC",
+              network: "Solana"
+            }
+          },
+          notes: formData.notes || "Thank you for your business!"
+        }
       };
 
-      console.log('Invoice created:', invoiceData);
+      // Make API call to create invoice
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${apiUrl}/api/invoices`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(invoicePayload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to create invoice: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('Invoice created successfully:', result);
 
       setSubmitStatus({
         type: 'success',

@@ -108,11 +108,6 @@ The project is now under **private development**. For collaboration, licensing, 
 3. Enter the amount and details
 4. Confirm the transaction in your wallet
 
-#### Batch Payments/Payroll:
-1. Navigate to the "Payroll" section
-2. Select multiple payees and set amounts
-3. Review and confirm the batch transaction
-
 ### Requesting Payments
 
 1. Navigate to the "Pay Request" section
@@ -145,7 +140,6 @@ sienna/
 │   ├── hooks/               # Custom React hooks
 │   ├── pages/               # Page components
 │   │   ├── HomePage.js      # Dashboard page
-│   │   ├── PayrollPage.js   # Payroll management
 │   │   ├── GrowthPage.js    # Growth analytics
 │   │   ├── InvoicesPage.js  # Invoice management
 │   │   ├── YieldPage.js     # Yield generation
