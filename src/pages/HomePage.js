@@ -147,8 +147,8 @@ const HomePage = () => {
     },
     {
       icon: <FaUsers className="text-3xl text-primary" />,
-      title: "Payroll Management",
-      description: "Streamline your payroll process with automated USDC payments"
+      title: "Payment Management",
+      description: "Streamline your payments process with automated USDC payments"
     },
     {
       icon: <FaChartLine className="text-3xl text-primary" />,
@@ -447,7 +447,7 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
                       <div className="w-full border-t border-gray-200"></div>
                     </div>
                     <div className="relative flex justify-center">
-                      <span className="bg-white px-2 text-sm text-gray-500">Payroll Management</span>
+                      <span className="bg-white px-2 text-sm text-gray-500">Payments Management</span>
                     </div>
                   </div>
 

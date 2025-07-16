@@ -167,7 +167,7 @@ const PayeesPage = ({ initialTab = 'payees' }) => {
 
           {/* Page Header */}
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">Payroll Management</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Payments Management</h1>
             <div className="flex space-x-4">
               <button
                 onClick={handleAddClick}

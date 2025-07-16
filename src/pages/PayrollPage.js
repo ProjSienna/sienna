@@ -299,7 +299,7 @@ const PayrollPage = () => {
           onClick={handleBackClick}
           className="flex items-center text-primary hover:text-primary-dark font-medium"
         >
-          <FaArrowLeft className="mr-2" /> Back to Payroll Management
+          <FaArrowLeft className="mr-2" /> Back to Payments Management
         </button>
       </div>
 
@@ -309,7 +309,7 @@ const PayrollPage = () => {
           <FaWallet className="text-6xl text-primary mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Connect Your Wallet</h1>
           <p className="text-lg text-gray-600 mb-8">
-            You need to connect your wallet to run payroll payments.
+            You need to connect your wallet to run payments payments.
           </p>
         </div>
       )}

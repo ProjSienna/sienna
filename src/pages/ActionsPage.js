@@ -120,8 +120,8 @@ const ActionsPage = () => {
       link: '/growth'
     },
     {
-      id: 'payroll',
-      title: 'Process Payroll',
+      id: 'payment',
+      title: 'Process Payments',
       description: 'Pay multiple recipients at once',
       icon: <FaMoneyBillWave className="text-purple-500" />,
       link: '/payroll/run'

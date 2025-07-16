@@ -75,7 +75,7 @@ const LandingPage = () => {
     },
     {
       icon: <FaUsers className="text-3xl text-primary" />,
-      title: "Payroll Management",
+      title: "Payments Management",
       description: "Streamline your payroll process with automated USDC payments"
     },
     {
