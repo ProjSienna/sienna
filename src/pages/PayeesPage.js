@@ -7,7 +7,7 @@ import PayeeCard from '../components/PayeeCard';
 import PayeeForm from '../components/PayeeForm';
 import PaymentForm from '../components/PaymentForm';
 import TransactionCard from '../components/TransactionCard';
-import { FaPlus, FaSearch, FaWallet, FaHistory, FaFileExport, FaMoneyBillWave, FaUsers } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaWallet, FaHistory, FaFileExport, FaMoneyBillWave, FaUsers, FaFileInvoiceDollar } from 'react-icons/fa';
 
 const PayeesPage = ({ initialTab = 'payees' }) => {
   const navigate = useNavigate();
@@ -74,6 +74,19 @@ const PayeesPage = ({ initialTab = 'payees' }) => {
 
   const handlePayClick = (payee) => {
     setPayeeToPayment(payee);
+  };
+
+  const handleInvoiceClick = (payee) => {
+    navigate('/invoices/create', { 
+      state: { 
+        payee: {
+          name: payee.name,
+          walletAddress: payee.walletAddress,
+          amount: payee.amount || '',
+          description: payee.description || ''
+        }
+      } 
+    });
   };
 
   const handleFormClose = () => {
@@ -237,12 +250,13 @@ const PayeesPage = ({ initialTab = 'payees' }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Existing Payee Cards */}
                 {filteredPayees.map(payee => (
-                  <PayeeCard 
-                    key={payee.id} 
-                    payee={payee} 
+                  <PayeeCard
+                    key={payee.id}
+                    payee={payee}
                     onEdit={handleEditClick}
                     onDelete={handleDeleteClick}
                     onPay={handlePayClick}
+                    onInvoice={handleInvoiceClick}
                   />
                 ))}
                 
