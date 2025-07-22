@@ -14,6 +14,8 @@ import PaymentPage from './pages/PaymentPage';
 import PayRequestPage from './pages/PayRequestPage';
 import InvoicesPage from './pages/InvoicesPage';
 import InvoiceCreatePage from './pages/InvoiceCreatePage';
+import BusinessInfoPage from './pages/BusinessInfoPage';
+import AllInvoicesPage from './pages/AllInvoicesPage';
 import ApiPage from './pages/ApiPage';
 import PaymentGatewayPage from './pages/PaymentGatewayPage';
 import FinancialInsightPage from './pages/FinancialInsightPage';
@@ -42,6 +44,8 @@ function App() {
                     <Route path="/pay-request" element={<PayRequestPage />} />
                     <Route path="/invoices" element={<InvoicesPage />} />
                     <Route path="/invoices/create" element={<InvoiceCreatePage />} />
+                    <Route path="/invoices/all" element={<AllInvoicesPage />} />
+                    <Route path="/business-info" element={<BusinessInfoPage />} />
                     <Route path="/api" element={<ApiPage />} />
                     <Route path="/payment-gateway" element={<PaymentGatewayPage />} />
                   </Routes>

@@ -1,15 +1,77 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { FaFileInvoiceDollar, FaClock, FaSpinner, FaExclamationTriangle, FaUser, FaCalendarAlt, FaWallet } from 'react-icons/fa';
-import InvoiceForm from '../components/InvoiceForm';
+import { 
+  FaFileInvoiceDollar, 
+  FaClock, 
+  FaSpinner, 
+  FaExclamationTriangle, 
+  FaUser, 
+  FaCalendarAlt, 
+  FaWallet,
+  FaPlus,
+  FaEye,
+  FaEdit,
+  FaTrash,
+  FaPaperPlane,
+  FaBuilding,
+  FaChartLine,
+  FaCheckCircle,
+  FaTimesCircle
+} from 'react-icons/fa';
+import BusinessInfoForm from '../components/BusinessInfoForm';
 import { formatWalletAddress } from '../utils/solana';
 
 const InvoicesPage = () => {
   const { publicKey } = useWallet();
+  const navigate = useNavigate();
   const [requestedPayments, setRequestedPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [businessInfo, setBusinessInfo] = useState(null);
+  const [recentInvoices, setRecentInvoices] = useState([]);
+
+  // Mock recent invoices data (replace with API call later)
+  useEffect(() => {
+    const mockInvoices = [
+      {
+        id: 'INV-001',
+        client_name: 'Tech Corp Inc.',
+        amount: 2500,
+        status: 'sent',
+        due_date: '2025-08-15',
+        created_date: '2025-07-20',
+        invoice_number: 'INV-2025-001'
+      },
+      {
+        id: 'INV-002',
+        client_name: 'Design Studio LLC',
+        amount: 1800,
+        status: 'paid',
+        due_date: '2025-07-30',
+        created_date: '2025-07-18',
+        invoice_number: 'INV-2025-002'
+      },
+      {
+        id: 'INV-003',
+        client_name: 'Marketing Agency',
+        amount: 3200,
+        status: 'draft',
+        due_date: '2025-08-20',
+        created_date: '2025-07-22',
+        invoice_number: 'INV-2025-003'
+      }
+    ];
+    setRecentInvoices(mockInvoices);
+  }, []);
+
+  // Load business info from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('businessInfo');
+    if (stored) {
+      setBusinessInfo(JSON.parse(stored));
+    }
+  }, []);
 
   // Fetch requested payments on component mount
   useEffect(() => {
@@ -55,6 +117,177 @@ const InvoicesPage = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Get status color and icon
+  const getStatusDisplay = (status) => {
+    const statusConfig = {
+      draft: { color: 'bg-gray-100 text-gray-800', icon: FaEdit },
+      sent: { color: 'bg-blue-100 text-blue-800', icon: FaPaperPlane },
+      paid: { color: 'bg-green-100 text-green-800', icon: FaCheckCircle },
+      overdue: { color: 'bg-red-100 text-red-800', icon: FaTimesCircle }
+    };
+    return statusConfig[status] || statusConfig.draft;
+  };
+
+  // Compact Business Info Card
+  const CompactBusinessInfoCard = () => (
+    <div className="bg-white rounded-lg border border-gray-200 p-4 h-full">
+      <div className="flex items-center mb-3">
+        <div className="bg-blue-100 p-2 rounded-full mr-3">
+          <FaBuilding className="text-blue-600" />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-800">Business Info</h3>
+      </div>
+      
+      {businessInfo ? (
+        <div className="space-y-2">
+          <div>
+            <span className="text-sm font-medium text-gray-600">Name:</span>
+            <p className="text-sm text-gray-800">{businessInfo.name}</p>
+          </div>
+          <div>
+            <span className="text-sm font-medium text-gray-600">Email:</span>
+            <p className="text-sm text-gray-800">{businessInfo.email}</p>
+          </div>
+          <div>
+            <span className="text-sm font-medium text-gray-600">Address:</span>
+            <p className="text-sm text-gray-800">{businessInfo.city}, {businessInfo.state}</p>
+          </div>
+          <button 
+            onClick={() => navigate('/business-info')}
+            className="text-sm text-blue-600 hover:text-blue-800 font-medium mt-2"
+          >
+            Edit Business Info →
+          </button>
+        </div>
+      ) : (
+        <div className="text-center py-4">
+          <p className="text-sm text-gray-600 mb-3">Set up your business information</p>
+          <button 
+            onClick={() => navigate('/business-info')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors"
+          >
+            Setup Business Info
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  // Quick Actions Card
+  const QuickActionsCard = () => (
+    <div className="bg-white rounded-lg border border-gray-200 p-4 h-full">
+      <div className="flex items-center mb-3">
+        <div className="bg-green-100 p-2 rounded-full mr-3">
+          <FaChartLine className="text-green-600" />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-800">Quick Actions</h3>
+      </div>
+      
+      <div className="space-y-3">
+        <button 
+          onClick={() => navigate('/invoices/create')}
+          className="w-full bg-primary text-white px-4 py-3 rounded-md hover:bg-primary-dark transition-colors flex items-center justify-center"
+        >
+          <FaPlus className="mr-2" />
+          Create New Invoice
+        </button>
+        
+        <button 
+          onClick={() => navigate('/invoices/all')}
+          className="w-full bg-gray-100 text-gray-700 px-4 py-3 rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center"
+        >
+          <FaEye className="mr-2" />
+          View All Invoices
+        </button>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div>
+            <p className="text-lg font-semibold text-gray-800">{recentInvoices.length}</p>
+            <p className="text-xs text-gray-600">Total</p>
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-green-600">
+              {recentInvoices.filter(inv => inv.status === 'paid').length}
+            </p>
+            <p className="text-xs text-gray-600">Paid</p>
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-blue-600">
+              {recentInvoices.filter(inv => inv.status === 'sent').length}
+            </p>
+            <p className="text-xs text-gray-600">Pending</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Recent Invoice Card
+  const RecentInvoiceCard = ({ invoice }) => {
+    const statusDisplay = getStatusDisplay(invoice.status);
+    const StatusIcon = statusDisplay.icon;
+    
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow p-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <h4 className="text-lg font-semibold text-gray-800">
+                  {invoice.invoice_number}
+                </h4>
+                <span className={`ml-3 inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${statusDisplay.color}`}>
+                  <StatusIcon className="mr-1" />
+                  {invoice.status.toUpperCase()}
+                </span>
+              </div>
+              <div className="text-right">
+                <p className="text-lg font-semibold text-gray-800">${invoice.amount}</p>
+                <p className="text-sm text-gray-600">USDC</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+              <div className="flex items-center text-sm text-gray-600">
+                <FaUser className="mr-2 text-gray-400" />
+                <span>{invoice.client_name}</span>
+              </div>
+              
+              <div className="flex items-center text-sm text-gray-600">
+                <FaCalendarAlt className="mr-2 text-gray-400" />
+                <span>Due: {new Date(invoice.due_date).toLocaleDateString()}</span>
+              </div>
+              
+              <div className="flex items-center text-sm text-gray-600">
+                <FaCalendarAlt className="mr-2 text-gray-400" />
+                <span>Created: {new Date(invoice.created_date).toLocaleDateString()}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-end space-x-2 mt-4 pt-4 border-t border-gray-200">
+          <button className="text-blue-600 hover:text-blue-800 p-2 rounded-md hover:bg-blue-50 transition-colors">
+            <FaEye />
+          </button>
+          <button className="text-gray-600 hover:text-gray-800 p-2 rounded-md hover:bg-gray-50 transition-colors">
+            <FaEdit />
+          </button>
+          {invoice.status === 'draft' && (
+            <button className="text-green-600 hover:text-green-800 p-2 rounded-md hover:bg-green-50 transition-colors">
+              <FaPaperPlane />
+            </button>
+          )}
+          <button className="text-red-600 hover:text-red-800 p-2 rounded-md hover:bg-red-50 transition-colors">
+            <FaTrash />
+          </button>
+        </div>
+      </div>
+    );
   };
 
   // Render requested payment card
@@ -124,19 +357,64 @@ const InvoicesPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Create Invoice Section */}
-      <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-        <div className="flex items-center mb-6">
+      {/* Dashboard Header */}
+      <div className="mb-8">
+        <div className="flex items-center mb-4">
           <div className="bg-secondary bg-opacity-10 p-3 rounded-md mr-4">
-            <FaFileInvoiceDollar className="text-2xl text-secondary" />
+            <FaFileInvoiceDollar className="text-3xl text-secondary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Invoice Management</h1>
-            <p className="text-gray-600">Create and manage invoices for your business</p>
+            <h1 className="text-3xl font-bold text-gray-800">Invoice Dashboard</h1>
+            <p className="text-gray-600">Manage your business info, invoices, and payment requests</p>
           </div>
         </div>
-        
-        <InvoiceForm />
+      </div>
+
+      {/* Top Section: Business Info + Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <CompactBusinessInfoCard />
+        <QuickActionsCard />
+      </div>
+
+      {/* Recent Invoices Section */}
+      <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <div className="bg-purple-100 p-3 rounded-md mr-4">
+              <FaFileInvoiceDollar className="text-2xl text-purple-600" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">Recent Invoices</h2>
+              <p className="text-gray-600">Your latest invoice activity</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => navigate('/invoices/all')}
+            className="text-primary hover:text-primary-dark font-medium"
+          >
+            View All →
+          </button>
+        </div>
+
+        {recentInvoices.length === 0 ? (
+          <div className="text-center py-12">
+            <FaFileInvoiceDollar className="text-4xl text-gray-400 mb-4 mx-auto" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">No Invoices Yet</h3>
+            <p className="text-gray-500 mb-4">Create your first invoice to get started.</p>
+            <button 
+              onClick={() => navigate('/invoices/create')}
+              className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+            >
+              Create Invoice
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {recentInvoices.slice(0, 3).map((invoice) => (
+              <RecentInvoiceCard key={invoice.id} invoice={invoice} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Requested Payments Section */}

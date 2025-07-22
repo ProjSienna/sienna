@@ -317,12 +317,12 @@ const PayrollPage = () => {
       {/* Payroll Form */}
       {publicKey && (
         <div className="bg-white rounded-xl shadow-md p-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">Run Payroll</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">Run Payment</h1>
           
           {isPayrollComplete() ? (
             <div className="text-center py-8">
               <FaCheckCircle className="text-6xl text-accent mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Payroll Complete!</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Payment Complete!</h2>
               <p className="text-lg text-gray-600 mb-8">
                 All payments have been successfully processed.
               </p>
@@ -330,7 +330,7 @@ const PayrollPage = () => {
                 onClick={resetPayroll}
                 className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90"
               >
-                Start New Payroll
+                Start New Payment
               </button>
             </div>
           ) : (
@@ -338,7 +338,7 @@ const PayrollPage = () => {
               {/* Payroll Name */}
               <div className="mb-6">
                 <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="payrollName">
-                  Payroll Name*
+                  Payment Name*
                 </label>
                 <input
                   type="text"
@@ -505,7 +505,7 @@ const PayrollPage = () => {
                   ) : (
                     <>
                       <FaCoins className="mr-2" />
-                      Run Payroll
+                      Run Payment
                     </>
                   )}
                 </button>

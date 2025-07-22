@@ -447,7 +447,7 @@ const RequestPaymentForm = ({ onClose }) => {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Relationship
+              Relationship (optional)
             </label>
             <select
               name="relationship"
