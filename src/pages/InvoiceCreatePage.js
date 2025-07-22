@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { FaArrowLeft, FaPaperPlane, FaSpinner, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaArrowLeft, FaPaperPlane, FaSpinner, FaPlus, FaTrash, FaDownload, FaUniversity, FaWallet } from 'react-icons/fa';
 import { formatWalletAddress } from '../utils/solana';
 
 const InvoiceCreatePage = () => {
@@ -65,6 +65,14 @@ const InvoiceCreatePage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [businessInfo, setBusinessInfo] = useState(null);
+  
+  // Use refs instead of state for these values
+  const createdInvoiceRef = useRef(null);
+  const emailSendingRef = useRef(false);
+  const emailSentRef = useRef(false);
+  const successMessageRef = useRef(null);
+  const viewAllInvoicesButtonRef = useRef(null);
 
   // Calculate amounts when items or tax/discount changes
   useEffect(() => {
@@ -107,6 +115,51 @@ const InvoiceCreatePage = () => {
       }));
     }
   }, [location.state]);
+
+  // Load business info from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('businessInfo');
+    if (stored) {
+      setBusinessInfo(JSON.parse(stored));
+    }
+  }, []);
+
+  // Auto-populate bank information from business info
+  const loadBankInfo = () => {
+    if (businessInfo) {
+      setFormData(prev => ({
+        ...prev,
+        // Payment recipient info
+        payeeName: businessInfo.name || '',
+        payeeEmail: businessInfo.email || '',
+        payeePhone: businessInfo.phone || '',
+        payeeAddress: `${businessInfo.street || ''}, ${businessInfo.city || ''}, ${businessInfo.state || ''} ${businessInfo.zip || ''}, ${businessInfo.country || ''}`.replace(/^,\s*|,\s*$|,\s*,/g, '').trim(),
+        // Bank details
+        bankName: businessInfo.bankName || '',
+        bankAccount: businessInfo.accountNumber || '',
+        bankRouting: businessInfo.routingNumber || '',
+        swiftCode: businessInfo.swiftCode || ''
+      }));
+    }
+  };
+
+  // Auto-populate crypto information from business info
+  const loadCryptoInfo = () => {
+    if (businessInfo) {
+      setFormData(prev => ({
+        ...prev,
+        // Payment recipient info
+        payeeName: businessInfo.name || '',
+        payeeEmail: businessInfo.email || '',
+        payeePhone: businessInfo.phone || '',
+        payeeAddress: `${businessInfo.street || ''}, ${businessInfo.city || ''}, ${businessInfo.state || ''} ${businessInfo.zip || ''}, ${businessInfo.country || ''}`.replace(/^,\s*|,\s*$|,\s*,/g, '').trim(),
+        // Crypto details
+        payeeWallet: businessInfo.walletAddress || '',
+        chainType: businessInfo.chainType || 'solana',
+        token: businessInfo.token || ''
+      }));
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -253,11 +306,14 @@ const InvoiceCreatePage = () => {
         }
       };
 
-      const requestData = {
-        invoiceData,
-        businessName: formData.businessInfo.name,
-        templateName: formData.templateName || "default_invoice"
-      };
+      // Get business name from the same source as the invoice data
+    const businessInfo = JSON.parse(localStorage.getItem('businessInfo')) || { name: 'Your Business Name' };
+    
+    const requestData = {
+      invoiceData,
+      businessName: businessInfo.name,
+      templateName: formData.templateName
+    };
 
       // Make the API call
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
@@ -279,11 +335,41 @@ const InvoiceCreatePage = () => {
       const result = await response.json();
       console.log('Invoice created:', result);
       
+      // Store the created invoice information in ref instead of state
+      createdInvoiceRef.current = {
+        id: result.id || result._id || 'undefined',
+        invoiceNumber: formData.invoiceNumber,
+        clientName: formData.payeeName,
+        clientEmail: formData.payeeEmail,
+        // Use the viewUrl from the backend response
+        url: result.viewUrl || `http://localhost:4000/api/invoices/${result.id || result._id || 'unknown'}/view`
+      };
+      
       setSuccess(true);
       
+      // Update the DOM directly for invoice URL display and email button
       setTimeout(() => {
-        navigate('/invoices');
-      }, 1500);
+        const urlElement = document.getElementById('invoice-url');
+        const sendEmailButton = document.getElementById('send-email-button');
+        
+        if (urlElement && createdInvoiceRef.current) {
+          urlElement.textContent = createdInvoiceRef.current.url;
+          urlElement.href = createdInvoiceRef.current.url;
+        }
+        
+        // Initialize email button if client email exists
+        if (sendEmailButton && createdInvoiceRef.current && createdInvoiceRef.current.clientEmail) {
+          sendEmailButton.style.display = 'inline-flex';
+          sendEmailButton.innerHTML = `
+            <svg class="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            Send Invoice to ${createdInvoiceRef.current.clientEmail}
+          `;
+        }
+      }, 0);
+      
+      // No longer automatically navigate away - let user choose what to do next
       
     } catch (err) {
       console.error('Error creating invoice:', err);
@@ -295,6 +381,129 @@ const InvoiceCreatePage = () => {
 
   const handleBack = () => {
     navigate(-1);
+  };
+  
+  // Function to handle sending invoice via email
+  const handleSendEmail = async () => {
+    if (!createdInvoiceRef.current || !createdInvoiceRef.current.clientEmail) {
+      setError('Cannot send email: Missing client email address');
+      return;
+    }
+    
+    try {
+      // Update ref and UI directly
+      emailSendingRef.current = true;
+      
+      // Update UI to show sending state
+      const sendButton = document.getElementById('send-email-button');
+      const emailStatusElement = document.getElementById('email-status');
+      
+      if (sendButton) {
+        sendButton.disabled = true;
+        sendButton.innerHTML = `
+          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Sending Email...
+        `;
+      }
+      
+      // API call to send the invoice via email
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${apiUrl}/api/invoices/${createdInvoiceRef.current.id}/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: createdInvoiceRef.current.clientEmail,
+          // The URL is already properly formatted from the backend
+          invoiceUrl: createdInvoiceRef.current.url,
+          invoiceNumber: createdInvoiceRef.current.invoiceNumber
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to send invoice email');
+      }
+      
+      // Update ref and UI for success
+      emailSentRef.current = true;
+      emailSendingRef.current = false;
+      
+      // Update UI to show success
+      if (emailStatusElement) {
+        emailStatusElement.innerHTML = `
+          <div class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-md">
+            <svg class="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Email Sent Successfully
+          </div>
+        `;
+      }
+      
+      // Hide the send button
+      if (sendButton) {
+        sendButton.style.display = 'none';
+      }
+      
+    } catch (err) {
+      console.error('Error sending invoice email:', err);
+      setError(err.message || 'Failed to send invoice email');
+      
+      // Reset UI on error
+      const sendButton = document.getElementById('send-email-button');
+      if (sendButton) {
+        sendButton.disabled = false;
+        sendButton.innerHTML = `
+          <svg class="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          Send Invoice to ${createdInvoiceRef.current.clientEmail}
+        `;
+      }
+    } finally {
+      emailSendingRef.current = false;
+    }
+  };
+  
+  // Function to copy invoice URL to clipboard
+  const handleCopyUrl = () => {
+    if (createdInvoiceRef.current && createdInvoiceRef.current.url) {
+      navigator.clipboard.writeText(createdInvoiceRef.current.url)
+        .then(() => {
+          // Show temporary success message directly in the DOM
+          const urlElement = document.getElementById('invoice-url');
+          const copyButton = document.getElementById('copy-url-button');
+          
+          if (urlElement) {
+            const originalText = urlElement.textContent;
+            urlElement.textContent = 'URL copied!';
+            
+            // Change button color to indicate success
+            if (copyButton) {
+              copyButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+              copyButton.classList.add('bg-green-600', 'hover:bg-green-700');
+              
+              setTimeout(() => {
+                copyButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+                copyButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+              }, 2000);
+            }
+            
+            setTimeout(() => {
+              urlElement.textContent = originalText;
+            }, 2000);
+          }
+        })
+        .catch(err => {
+          console.error('Failed to copy URL:', err);
+          setError('Failed to copy URL to clipboard');
+        });
+    }
   };
 
   // If wallet is not connected, show message
@@ -348,20 +557,75 @@ const InvoiceCreatePage = () => {
           )}
           
           {success ? (
-            <div className="text-center py-10">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="bg-white p-6 rounded-lg shadow-md" ref={successMessageRef}>
+              <div className="flex items-center justify-center text-green-600 mb-4">
+                <svg className="h-12 w-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="mt-3 text-lg font-medium text-gray-900">Invoice Created!</h3>
-              <p className="mt-2 text-sm text-gray-500">Your invoice has been successfully created.</p>
-              <div className="mt-6">
+              <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">Invoice Created Successfully!</h2>
+              <p className="text-center text-gray-600 mb-6">Your invoice has been created and is ready to share.</p>
+              
+              {/* Invoice URL Section */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-md border border-gray-200">
+                <h3 className="text-md font-medium text-gray-700 mb-2">Invoice URL</h3>
+                <div className="flex items-center">
+                  <div className="flex-grow overflow-hidden">
+                    <a 
+                      id="invoice-url"
+                      href="#" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 truncate block"
+                    >
+                      {/* URL will be set by handleSubmit */}
+                    </a>
+                  </div>
+                  <button
+                    id="copy-url-button"
+                    type="button"
+                    onClick={handleCopyUrl}
+                    className="ml-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <svg className="-ml-0.5 mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Copy
+                  </button>
+                </div>
+              </div>
+              
+              {/* Email Section - Only show if client email exists */}
+              <div id="email-section" className="mb-6 text-center">
+                {/* Email button and status will be managed by DOM manipulation */}
+                <button
+                  id="send-email-button"
+                  type="button"
+                  onClick={handleSendEmail}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  style={{display: 'none'}} // Initially hidden, will be shown if email exists
+                >
+                  <svg className="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Send Invoice
+                </button>
+                <div id="email-status"></div>
+              </div>
+              
+              <div className="mt-6 flex justify-center space-x-4">
                 <button
                   onClick={() => navigate('/invoices')}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  ref={viewAllInvoicesButtonRef}
                 >
                   View All Invoices
+                </button>
+                <button
+                  onClick={() => navigate('/invoices/create')}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                >
+                  Create Another Invoice
                 </button>
               </div>
             </div>
@@ -460,7 +724,19 @@ const InvoiceCreatePage = () => {
 
               {/* Wire/ACH Information Section */}
               <div className="mb-8 border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Wire / ACH Information</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">Wire / ACH Information</h3>
+                  {businessInfo && (businessInfo.name || businessInfo.bankName || businessInfo.accountNumber) && (
+                    <button
+                      type="button"
+                      onClick={loadBankInfo}
+                      className="flex items-center px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+                    >
+                      <FaDownload className="mr-1" />
+                      Load Business & Bank Info
+                    </button>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Type</label>
@@ -536,6 +812,62 @@ const InvoiceCreatePage = () => {
                       />
                       <span className="ml-1 text-xs text-gray-500">Verified</span>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Crypto Information Section */}
+              <div className="mb-8 border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">Crypto Information</h3>
+                  {businessInfo && (businessInfo.name || businessInfo.walletAddress) && (
+                    <button
+                      type="button"
+                      onClick={loadCryptoInfo}
+                      className="flex items-center px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 transition-colors"
+                    >
+                      <FaDownload className="mr-1" />
+                      Load Business & Crypto Info
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Chain Type</label>
+                    <select
+                      name="chainType"
+                      value={formData.chainType}
+                      onChange={handleChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                    >
+                      <option value="">Select Chain</option>
+                      <option value="solana">Solana</option>
+                      <option value="ethereum">Ethereum</option>
+                      <option value="bitcoin">Bitcoin</option>
+                      <option value="polygon">Polygon</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Token</label>
+                    <input
+                      type="text"
+                      name="token"
+                      value={formData.token}
+                      onChange={handleChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                      placeholder="e.g. USDC, ETH, SOL"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Wallet Address</label>
+                    <input
+                      type="text"
+                      name="payeeWallet"
+                      value={formData.payeeWallet}
+                      onChange={handleChange}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm font-mono text-sm"
+                      placeholder="Wallet address for receiving payments"
+                    />
                   </div>
                 </div>
               </div>
