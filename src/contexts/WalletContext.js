@@ -5,7 +5,6 @@ import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
-import { API_URL } from '../config';
 
 // No more UI imports needed
 
