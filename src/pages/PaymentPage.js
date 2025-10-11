@@ -70,7 +70,7 @@ const PaymentPage = () => {
     };
   };
 
-  const handlePaymentSuccess = (transaction) => {
+  const handlePaymentSuccess = () => {
     setPaymentComplete(true);
     // Could add additional success handling here
   };

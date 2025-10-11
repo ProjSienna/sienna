@@ -1,16 +1,11 @@
 import {
-    Connection,
     PublicKey,
     Transaction,
     sendAndConfirmTransaction,
-    Keypair,
-    TransactionMessage,
-    VersionedTransaction,
 } from "@solana/web3.js";
 import {
     createTransferInstruction,
     getAssociatedTokenAddress,
-    getAccount,
     TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 

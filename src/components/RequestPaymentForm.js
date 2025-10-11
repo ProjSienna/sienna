@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { usePayees } from '../contexts/PayeesContext';
-import { FaTimes, FaCopy, FaCheck, FaSearch, FaPlusCircle, FaArrowRight, FaEnvelope, FaChevronLeft } from 'react-icons/fa';
+import { FaTimes, FaCopy, FaCheck, FaSearch, FaPlusCircle, FaArrowRight, FaChevronLeft } from 'react-icons/fa';
 import Confetti from 'react-confetti';
-import CryptoJS from 'crypto-js'; // We'll use this for encryption
 import { Link } from 'react-router-dom';
 
 const RequestPaymentForm = ({ onClose }) => {
@@ -34,7 +33,7 @@ const RequestPaymentForm = ({ onClose }) => {
   const [dueDate, setDueDate] = useState('');
   const [paymentLink, setPaymentLink] = useState('');
   const [senderEmail, setSenderEmail] = useState('');
-  const [emailSent, setEmailSent] = useState(false);
+  
   const [copied, setCopied] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailError, setEmailError] = useState(null);
@@ -103,13 +102,7 @@ const RequestPaymentForm = ({ onClose }) => {
     setStep(step - 1);
   };
 
-  // Function to encrypt the payment ID
-  const encryptPaymentId = (id) => {
-    // Use a simple encryption to make it harder to guess/manipulate
-    // In production, you'd want to use a secure key from environment variables
-    const secretKey = 'sienna-payment-secret-key';
-    return CryptoJS.AES.encrypt(id.toString(), secretKey).toString();
-  };
+  // (removed unused encryptPaymentId)
 
   // Function to create a transaction record in the database
   const createTransactionRecord = async () => {
@@ -308,7 +301,6 @@ const RequestPaymentForm = ({ onClose }) => {
         throw new Error(errorData.message || 'Failed to send email');
       }
 
-      setEmailSent(true);
       setStep(4);
     } catch (error) {
       console.error('Error sending email:', error);
@@ -648,7 +640,6 @@ const RequestPaymentForm = ({ onClose }) => {
             setDescription('');
             setDueDate('');
             setPaymentLink('');
-            setEmailSent(false);
             setPaymentId(null);
           }}
           className="py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
@@ -716,7 +707,6 @@ const RequestPaymentForm = ({ onClose }) => {
               setDescription('');
               setDueDate('');
               setPaymentLink('');
-              setEmailSent(false);
               setEmailError(null);
               setPaymentId(null);
             }}

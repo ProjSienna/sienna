@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { FaArrowLeft, FaPaperPlane, FaSpinner, FaPlus, FaTrash, FaDownload, FaUniversity, FaWallet } from 'react-icons/fa';
+import { FaArrowLeft, FaPaperPlane, FaSpinner, FaPlus, FaTrash, FaDownload } from 'react-icons/fa';
 import { formatWalletAddress } from '../utils/solana';
 
 const InvoiceCreatePage = () => {
@@ -110,7 +110,7 @@ const InvoiceCreatePage = () => {
   // Initialize form with client data if available (Bill To information)
   useEffect(() => {
     if (location.state?.payee) {
-      const { name, walletAddress, email, phone, address } = location.state.payee;
+      const { name, email, phone, address } = location.state.payee;
       setFormData(prev => ({
         ...prev,
         // Set Bill To information (client)

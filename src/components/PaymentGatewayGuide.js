@@ -55,7 +55,7 @@ const PaymentGatewayGuide = ({ onClose }) => {
             </button>
           </div>
           
-          <p>You'll receive a response with a transaction ID:</p>
+          <p>You&apos;ll receive a response with a transaction ID:</p>
           
           <div className="bg-gray-50 p-4 rounded-lg relative">
             <pre className="text-sm overflow-x-auto font-mono">
@@ -99,7 +99,7 @@ const PaymentGatewayGuide = ({ onClose }) => {
             </button>
           </div>
           
-          <p>Share this link with your client, and they'll be able to complete the payment through the payment page.</p>
+          <p>Share this link with your client, and they&apos;ll be able to complete the payment through the payment page.</p>
           
           <h2>Tracking Transactions: Check Transaction Status</h2>
           
@@ -120,7 +120,7 @@ const PaymentGatewayGuide = ({ onClose }) => {
           <ol>
             <li><strong>Always verify wallet addresses</strong> - Double-check that the recipient_wallet and sender_wallet values are correct.</li>
             <li><strong>Include descriptive memos</strong> - This helps both you and your clients understand what each transaction is for.</li>
-            <li><strong>Follow up on pending transactions</strong> - Regularly check for transactions that are still in "pending" status.</li>
+            <li><strong>Follow up on pending transactions</strong> - Regularly check for transactions that are still in &quot;pending&quot; status.</li>
           </ol>
         </div>
       </div>

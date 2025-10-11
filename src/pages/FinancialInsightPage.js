@@ -305,7 +305,7 @@ const FinancialInsightPage = () => {
                     </div>
                     <div>
                       <h5 className="font-medium text-gray-800 mb-1">Review Service Subscriptions</h5>
-                      <p className="text-sm text-gray-600">We've identified potential overlaps in your business service subscriptions. Consolidating these could save approximately 300 USDC monthly.</p>
+                      <p className="text-sm text-gray-600">We&apos;ve identified potential overlaps in your business service subscriptions. Consolidating these could save approximately 300 USDC monthly.</p>
                     </div>
                   </div>
                 </div>

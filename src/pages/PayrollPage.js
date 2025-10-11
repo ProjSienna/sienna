@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { usePayees } from '../contexts/PayeesContext';
 import { useTransactions } from '../contexts/TransactionsContext';
-import { sendUSDC, sendBatchUSDC, formatWalletAddress } from '../utils/solana';
+import { sendBatchUSDC, formatWalletAddress } from '../utils/solana';
 import { FaCheckCircle, FaTimesCircle, FaWallet, FaSpinner, FaCoins, FaArrowLeft } from 'react-icons/fa';
 
 const PayrollPage = () => {
@@ -207,71 +207,7 @@ const PayrollPage = () => {
     }
   };
 
-  // Legacy individual processing method (fallback if needed)
-  const processPayrollIndividually = async () => {
-    if (!validatePayroll() || !publicKey) return;
-    
-    setIsSubmitting(true);
-    const newProcessingStates = {};
-    const newCompletedPayments = {};
-    
-    for (const payeeId of selectedPayees) {
-      newProcessingStates[payeeId] = 'processing';
-    }
-    
-    setProcessingStates(newProcessingStates);
-    
-    for (const payeeId of selectedPayees) {
-      try {
-        const payee = payees.find(p => p.id === payeeId);
-        if (!payee) continue;
-        
-        const amount = customAmounts[payeeId] !== undefined 
-          ? parseFloat(customAmounts[payeeId]) 
-          : payee.amount;
-        
-        // Create transaction
-        const tx = await sendUSDC({
-          connection,
-          fromWallet: publicKey.toString(),
-          toWallet: payee.walletAddress,
-          amount,
-        });
-        
-        // Send transaction
-        const signature = await sendTransaction(tx, connection);
-        
-        // Wait for confirmation
-        await connection.confirmTransaction(signature, 'confirmed');
-        
-        // Add to transaction history
-        addTransaction({
-          amount,
-          memo: `${payrollName}: Payment to ${payee.name}`,
-          recipientName: payee.name,
-          recipientWallet: payee.walletAddress,
-          senderWallet: publicKey.toString(),
-          signature,
-        });
-        
-        newProcessingStates[payeeId] = 'completed';
-        newCompletedPayments[payeeId] = true;
-        
-      } catch (err) {
-        console.error('Payment error for payee', payeeId, err);
-        newProcessingStates[payeeId] = 'error';
-        setErrors(prev => ({
-          ...prev,
-          [payeeId]: err.message || 'Failed to process payment'
-        }));
-      }
-      
-      setProcessingStates({...newProcessingStates});
-      setCompletedPayments({...newCompletedPayments});
-    }
-    
-    setIsSubmitting(false);
-  };
+  // (removed unused legacy processPayrollIndividually)
 
   const isPayrollComplete = () => {
     if (selectedPayees.length === 0) return false;

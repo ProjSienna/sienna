@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useTransactions } from '../contexts/TransactionsContext';
-import { formatWalletAddress } from '../utils/solana';
 import TransactionCard from '../components/TransactionCard';
 import WalletDetails from '../components/WalletDetails';
 import RequestPaymentForm from '../components/RequestPaymentForm';
@@ -12,14 +11,12 @@ import {
   FaHistory, 
   FaMoneyBillWave, 
   FaChartLine, 
-  FaArrowDown, 
   FaArrowUp, 
   FaUsers,
   FaFileInvoiceDollar,
   FaPeopleArrows,
   FaRegClock,
   FaShieldAlt,
-  FaSatelliteDish,
   FaPaperPlane,
   FaBell,
   FaCheckCircle,
@@ -58,9 +55,7 @@ const HomePage = () => {
     setShowRequestPayment(true);
   };
 
-  const handlePaymentGatewaySetup = () => {
-    setShowPaymentGateway(true);
-  };
+  // removed unused handlePaymentGatewaySetup
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
@@ -339,7 +334,7 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
               
               {subscribed ? (
                 <div className="bg-green-50 text-green-700 p-4 rounded-lg max-w-md mx-auto flex items-center justify-center">
-                  <FaCheckCircle className="mr-2" /> Thanks for subscribing! We'll be in touch soon.
+                  <FaCheckCircle className="mr-2" /> Thanks for subscribing! We&apos;ll be in touch soon.
                 </div>
               ) : (
                 <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
@@ -382,7 +377,7 @@ fetch('https://api.projectsienna.xyz/api/email/payment-request', {
             </p>
             <div className="flex justify-center items-center gap-2 text-gray-500">
               <FaWallet className="text-xl" />
-              <span>Click "Connect Wallet" in the top-right corner to begin</span>
+              <span>Click &quot;Connect Wallet&quot; in the top-right corner to begin</span>
             </div>
           </div>
         </div>

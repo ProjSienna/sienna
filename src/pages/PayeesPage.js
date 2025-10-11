@@ -7,9 +7,9 @@ import PayeeCard from '../components/PayeeCard';
 import PayeeForm from '../components/PayeeForm';
 import PaymentForm from '../components/PaymentForm';
 import TransactionCard from '../components/TransactionCard';
-import { FaPlus, FaSearch, FaWallet, FaHistory, FaFileExport, FaMoneyBillWave, FaUsers, FaFileInvoiceDollar } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaWallet, FaHistory, FaFileExport, FaMoneyBillWave, FaUsers } from 'react-icons/fa';
 
-const PayeesPage = ({ initialTab = 'payees' }) => {
+const PayeesPage = () => {
   const navigate = useNavigate();
   const { publicKey } = useWallet();
   const { payees, deletePayee } = usePayees();
@@ -333,7 +333,7 @@ const PayeesPage = ({ initialTab = 'payees' }) => {
               {filteredTransactions.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-lg">
                   {transactions.length === 0 ? (
-                    <p className="text-gray-500">You haven't made any transactions yet.</p>
+                    <p className="text-gray-500">You haven&apos;t made any transactions yet.</p>
                   ) : (
                     <p className="text-gray-500">No transactions match your search criteria.</p>
                   )}

@@ -19,7 +19,6 @@ import {
   FaCheckCircle,
   FaTimesCircle
 } from 'react-icons/fa';
-import BusinessInfoForm from '../components/BusinessInfoForm';
 import { formatWalletAddress } from '../utils/solana';
 
 const InvoicesPage = () => {
@@ -459,7 +458,7 @@ const InvoicesPage = () => {
           <div className="text-center py-12">
             <FaClock className="text-4xl text-gray-400 mb-4 mx-auto" />
             <h3 className="text-lg font-semibold text-gray-600 mb-2">No Requested Payments</h3>
-            <p className="text-gray-500">You don't have any pending payment requests at the moment.</p>
+            <p className="text-gray-500">You don&apos;t have any pending payment requests at the moment.</p>
           </div>
         )}
 

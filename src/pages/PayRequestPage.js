@@ -385,7 +385,7 @@ const PayRequestPage = () => {
                     <div className="ml-4">
                       <h3 className="font-semibold text-blue-800">Quick Tip</h3>
                       <p className="text-blue-700 text-sm">
-                        Sending USDC on Solana typically takes less than 1 second and costs only a fraction of a cent. It's like teleporting money! ⚡
+                        Sending USDC on Solana typically takes less than 1 second and costs only a fraction of a cent. It&apos;s like teleporting money! ⚡
                       </p>
                     </div>
                   </div>
@@ -411,7 +411,7 @@ const PayRequestPage = () => {
                     <div className="ml-4">
                       <h3 className="font-semibold text-yellow-800">Before You Pay</h3>
                       <p className="text-yellow-700 text-sm mb-2">
-                        To complete this payment, you'll need:
+                        To complete this payment, you&apos;ll need:
                       </p>
                       <ul className="text-yellow-700 text-sm list-disc list-inside space-y-1">
                         <li>A Solana wallet (like Phantom or Solflare)</li>

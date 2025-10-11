@@ -20,7 +20,7 @@ const frequencyLabels = {
   annually: 'Annually'
 };
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 
 const PayeeCard = ({ payee, onEdit, onDelete, onPay, onInvoice }) => {
   const [showDropdown, setShowDropdown] = useState(false);

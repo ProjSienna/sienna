@@ -16,7 +16,6 @@ const WalletDetails = () => {
   const [walletBalance, setWalletBalance] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [copied, setCopied] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   
@@ -124,26 +123,16 @@ const WalletDetails = () => {
     }
   };
 
-  const handleCopyAddress = () => {
-    if (publicKey) {
-      navigator.clipboard.writeText(publicKey.toString());
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
+  // removed unused handleCopyAddress
 
   const getExplorerLink = () => {
     if (!publicKey) return '#';
     return `https://solscan.io/account/${publicKey.toString()}`;
   };
 
-  const handleDeposit = () => {
-    setShowDepositModal(true);
-  };
+  // removed unused handleDeposit
 
-  const handleWithdraw = () => {
-    setShowWithdrawModal(true);
-  };
+  // removed unused handleWithdraw
 
   const handleRefreshBalances = () => {
     fetchBalances();
