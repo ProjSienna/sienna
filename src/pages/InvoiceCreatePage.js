@@ -10,7 +10,7 @@ const InvoiceCreatePage = () => {
   const { publicKey } = useWallet();
   
   const [formData, setFormData] = useState({
-    // Payee Info
+    // Payee Info (your business - who gets paid)
     payeeName: '',
     payeeWallet: '',
     payeeEmail: '',
@@ -20,6 +20,16 @@ const InvoiceCreatePage = () => {
     payeeAddressChecked: false,
     payeeEmailChecked: false,
     payeePhoneChecked: false,
+    
+    // Bill To Info (client)
+    billToName: '',
+    billToEmail: '',
+    billToPhone: '',
+    billToAddress: '',
+    billToNameChecked: false,
+    billToAddressChecked: false,
+    billToEmailChecked: false,
+    billToPhoneChecked: false,
     
     // Wire/ACH Info
     bankType: 'wire', // 'wire' or 'ach'
@@ -97,17 +107,17 @@ const InvoiceCreatePage = () => {
     }));
   }, [formData.items, formData.taxRate, formData.discountType, formData.discountValue]);
 
-  // Initialize form with payee data if available
+  // Initialize form with client data if available (Bill To information)
   useEffect(() => {
     if (location.state?.payee) {
       const { name, walletAddress, email, phone, address } = location.state.payee;
       setFormData(prev => ({
         ...prev,
-        payeeName: name || '',
-        payeeWallet: walletAddress || '',
-        payeeEmail: email || '',
-        payeePhone: phone || '',
-        payeeAddress: address || ''
+        // Set Bill To information (client)
+        billToName: name || '',
+        billToEmail: email || '',
+        billToPhone: phone || '',
+        billToAddress: address || ''
       }));
     }
   }, [location.state]);
@@ -125,7 +135,7 @@ const InvoiceCreatePage = () => {
     if (businessInfo) {
       setFormData(prev => ({
         ...prev,
-        // Payment recipient info
+        // Payee info (your business - who gets paid)
         payeeName: businessInfo.name || '',
         payeeEmail: businessInfo.email || '',
         payeePhone: businessInfo.phone || '',
@@ -144,7 +154,7 @@ const InvoiceCreatePage = () => {
     if (businessInfo) {
       setFormData(prev => ({
         ...prev,
-        // Payment recipient info
+        // Payee info (your business - who gets paid)
         payeeName: businessInfo.name || '',
         payeeEmail: businessInfo.email || '',
         payeePhone: businessInfo.phone || '',
@@ -556,9 +566,9 @@ const InvoiceCreatePage = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
-              {/* Payment Recipient Section */}
+              {/* Payee Section (Your Business - Who Gets Paid) */}
               <div className="mb-8 border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Recipient</h3>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Payee (Your Business)</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Name</label>
@@ -569,7 +579,7 @@ const InvoiceCreatePage = () => {
                         value={formData.payeeName}
                         onChange={handleChange}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                        placeholder="BeneficaryABC"
+                        placeholder="Your Business Name"
                       />
                       <input
                         type="checkbox"
@@ -590,7 +600,7 @@ const InvoiceCreatePage = () => {
                         value={formData.payeeAddress}
                         onChange={handleChange}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                        placeholder="100 East 1st Street New York, NY 10009"
+                        placeholder="Your Business Address"
                       />
                       <input
                         type="checkbox"
@@ -611,7 +621,7 @@ const InvoiceCreatePage = () => {
                         value={formData.payeeEmail}
                         onChange={handleChange}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                        placeholder="info@beneficaryabc.com"
+                        placeholder="your@business.com"
                       />
                       <input
                         type="checkbox"
@@ -658,7 +668,7 @@ const InvoiceCreatePage = () => {
                       className="flex items-center px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
                     >
                       <FaDownload className="mr-1" />
-                      Load Business & Bank Info
+                      Load Your Business & Bank Info
                     </button>
                   )}
                 </div>
@@ -752,7 +762,7 @@ const InvoiceCreatePage = () => {
                       className="flex items-center px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 transition-colors"
                     >
                       <FaDownload className="mr-1" />
-                      Load Business & Crypto Info
+                      Load Your Business & Crypto Info
                     </button>
                   )}
                 </div>
@@ -804,54 +814,54 @@ const InvoiceCreatePage = () => {
                     <h3 className="text-lg font-medium text-gray-900 mb-4">Bill To</h3>
                     <div className="space-y-4">
                       <div>
-                        <label htmlFor="payeeName" className="block text-sm font-medium text-gray-700">Name</label>
+                        <label htmlFor="billToName" className="block text-sm font-medium text-gray-700">Name</label>
                         <input
                           type="text"
-                          id="payeeName"
-                          name="payeeName"
-                          value={formData.payeeName}
+                          id="billToName"
+                          name="billToName"
+                          value={formData.billToName}
                           onChange={handleChange}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                          placeholder="Payee name"
+                          placeholder="Client name"
                         />
                       </div>
                       
                       <div>
-                        <label htmlFor="payeeEmail" className="block text-sm font-medium text-gray-700">Email</label>
+                        <label htmlFor="billToEmail" className="block text-sm font-medium text-gray-700">Email</label>
                         <input
                           type="email"
-                          id="payeeEmail"
-                          name="payeeEmail"
-                          value={formData.payeeEmail}
+                          id="billToEmail"
+                          name="billToEmail"
+                          value={formData.billToEmail}
                           onChange={handleChange}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                          placeholder="email@example.com"
+                          placeholder="Client email address"
                         />
                       </div>
                       
                       <div>
-                        <label htmlFor="payeePhone" className="block text-sm font-medium text-gray-700">Phone</label>
+                        <label htmlFor="billToPhone" className="block text-sm font-medium text-gray-700">Phone</label>
                         <input
                           type="tel"
-                          id="payeePhone"
-                          name="payeePhone"
-                          value={formData.payeePhone}
+                          id="billToPhone"
+                          name="billToPhone"
+                          value={formData.billToPhone}
                           onChange={handleChange}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                          placeholder="(123) 456-7890"
+                          placeholder="Client phone number"
                         />
                       </div>
                       
                       <div>
-                        <label htmlFor="payeeAddress" className="block text-sm font-medium text-gray-700">Address</label>
+                        <label htmlFor="billToAddress" className="block text-sm font-medium text-gray-700">Address</label>
                         <textarea
-                          id="payeeAddress"
-                          name="payeeAddress"
+                          id="billToAddress"
+                          name="billToAddress"
                           rows={3}
-                          value={formData.payeeAddress}
+                          value={formData.billToAddress}
                           onChange={handleChange}
                           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                          placeholder="Street address, City, State, ZIP"
+                          placeholder="Client street address, City, State, ZIP"
                         />
                       </div>
                       
