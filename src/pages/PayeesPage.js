@@ -81,6 +81,9 @@ const PayeesPage = () => {
       state: { 
         payee: {
           name: payee.name,
+          email: payee.email || '',
+          phone: payee.phone || '',
+          address: payee.address || '',
           walletAddress: payee.walletAddress,
           amount: payee.amount || '',
           description: payee.description || ''

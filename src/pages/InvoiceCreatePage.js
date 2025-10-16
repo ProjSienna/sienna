@@ -135,14 +135,15 @@ const InvoiceCreatePage = () => {
   // Initialize form with client data if available (Bill To information)
   useEffect(() => {
     if (location.state?.payee) {
-      const { name, email, phone, address } = location.state.payee;
+      const { name, email, phone, address, walletAddress } = location.state.payee;
       setFormData(prev => ({
         ...prev,
         // Set Bill To information (client)
         billToName: name || '',
         billToEmail: email || '',
         billToPhone: phone || '',
-        billToAddress: address || ''
+        billToAddress: address || '',
+        billToWallet: walletAddress || ''
       }));
     }
   }, [location.state]);
