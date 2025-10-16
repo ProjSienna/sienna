@@ -1,0 +1,143 @@
+{
+  "description": "Example Invoice Creation API Payload",
+  "endpoint": "POST http://localhost:4000/api/invoices",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "requestBody": {
+    "invoiceData": {
+      "invoice_info": {
+        "invoice_number": "INV-847293",
+        "issue_date": "2025-10-16",
+        "due_date": "2025-10-31",
+        "currency": "USD",
+        "tax_rate": 0.0825,
+        "payment_terms": "NET 15",
+        "status": "DRAFT"
+      },
+      "business_info": {
+        "name": "Acme Consulting LLC",
+        "contact": {
+          "email": "billing@acmeconsulting.com",
+          "phone": "+1 (555) 123-4567"
+        },
+        "address": {
+          "street": "123 Business Ave",
+          "city": "San Francisco",
+          "state": "CA",
+          "zip": "94102",
+          "country": "USA"
+        }
+      },
+      "client_info": {
+        "name": "TechCorp Industries",
+        "contact": {
+          "name": "TechCorp Industries",
+          "email": "accounts.payable@techcorp.com",
+          "phone": "+1 (555) 987-6543"
+        },
+        "address": {
+          "street": "456 Client Street",
+          "city": "New York",
+          "state": "NY",
+          "zip": "10001",
+          "country": "USA"
+        },
+        "wallet_address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"
+      },
+      "line_items": [
+        {
+          "description": "Web Development Services - Frontend Implementation",
+          "quantity": 40,
+          "unit_price": 150,
+          "amount": 6000
+        },
+        {
+          "description": "UI/UX Design Consultation",
+          "quantity": 10,
+          "unit_price": 200,
+          "amount": 2000
+        },
+        {
+          "description": "Backend API Integration",
+          "quantity": 20,
+          "unit_price": 175,
+          "amount": 3500
+        }
+      ],
+      "summary": {
+        "subtotal": 11500,
+        "tax_amount": 948.75,
+        "discount_type": "percentage",
+        "discount_value": 5,
+        "discount_amount": 575,
+        "total_due": 11873.75
+      },
+      "tax_info": {
+        "country": "US",
+        "state": "CA",
+        "service_category": "consulting"
+      },
+      "notes": "Payment is due within 15 days. Late payments may incur a 1.5% monthly interest charge. Thank you for your business!",
+      "footer": "Thank you for your business!",
+      "payment_info": {
+        "bank": {
+          "bank_name": "Chase Bank",
+          "account_number": "****1234",
+          "routing_number": "021000021",
+          "swift_code": "CHASUS33",
+          "account_holder": "Acme Consulting LLC",
+          "bank_type": "wire"
+        },
+        "crypto": {
+          "wallet_address": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+          "chain_type": "solana",
+          "token": "USDC"
+        }
+      },
+      "user_wallet": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+    },
+    "businessName": "Acme Consulting LLC"
+  },
+  "expectedResponse": {
+    "success": true,
+    "id": "67890abcdef12345",
+    "_id": "67890abcdef12345",
+    "invoiceNumber": "INV-847293",
+    "viewUrl": "/view-invoice/67890abcdef12345",
+    "pdfUrl": "/invoices/67890abcdef12345/pdf",
+    "createdAt": "2025-10-16T08:52:00.000Z",
+    "message": "Invoice created successfully"
+  },
+  "notes": [
+    "All monetary amounts are in USD",
+    "Tax rate is stored as decimal (0.0825 = 8.25%)",
+    "Discount can be 'none', 'percentage', or 'fixed'",
+    "Status options: 'DRAFT', 'SENT', 'PAID', 'OVERDUE'",
+    "Payment terms options: 'NET 7', 'NET 15', 'NET 30', 'NET 60', 'DUE ON RECEIPT'",
+    "Bank type options: 'wire' or 'ach'",
+    "Chain type examples: 'solana', 'ethereum', 'bitcoin', 'polygon'",
+    "User wallet is the connected Solana wallet address",
+    "Client wallet_address is optional - only if client pays via crypto"
+  ],
+  "validationRules": {
+    "required_fields": [
+      "invoiceData.invoice_info.invoice_number",
+      "invoiceData.invoice_info.issue_date",
+      "invoiceData.invoice_info.due_date",
+      "invoiceData.business_info.name",
+      "invoiceData.client_info.name",
+      "invoiceData.line_items (at least 1 item)",
+      "invoiceData.summary.total_due",
+      "businessName"
+    ],
+    "optional_fields": [
+      "invoiceData.client_info.wallet_address",
+      "invoiceData.payment_info.bank (all fields)",
+      "invoiceData.payment_info.crypto.wallet_address",
+      "invoiceData.notes",
+      "invoiceData.tax_info",
+      "invoiceData.summary.discount_*"
+    ]
+  }
+}

@@ -13,8 +13,10 @@ import {
   FaPaperPlane,
   FaCheckCircle,
   FaTimesCircle,
+  FaClock,
   FaSortAmountDown,
-  FaSortAmountUp
+  FaSortAmountUp,
+  FaSpinner
 } from 'react-icons/fa';
 
 const AllInvoicesPage = () => {
@@ -24,66 +26,53 @@ const AllInvoicesPage = () => {
   const [filteredInvoices, setFilteredInvoices] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('created_date');
+  const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock invoices data (replace with API call later)
+  // Fetch invoices from API - only when component mounts
   useEffect(() => {
-    const mockInvoices = [
-      {
-        id: 'INV-001',
-        client_name: 'Tech Corp Inc.',
-        amount: 2500,
-        status: 'sent',
-        due_date: '2025-08-15',
-        created_date: '2025-07-20',
-        invoice_number: 'INV-2025-001'
-      },
-      {
-        id: 'INV-002',
-        client_name: 'Design Studio LLC',
-        amount: 1800,
-        status: 'paid',
-        due_date: '2025-07-30',
-        created_date: '2025-07-18',
-        invoice_number: 'INV-2025-002'
-      },
-      {
-        id: 'INV-003',
-        client_name: 'Marketing Agency',
-        amount: 3200,
-        status: 'draft',
-        due_date: '2025-08-20',
-        created_date: '2025-07-22',
-        invoice_number: 'INV-2025-003'
-      },
-      {
-        id: 'INV-004',
-        client_name: 'Startup Inc.',
-        amount: 4500,
-        status: 'overdue',
-        due_date: '2025-07-10',
-        created_date: '2025-06-25',
-        invoice_number: 'INV-2025-004'
-      },
-      {
-        id: 'INV-005',
-        client_name: 'Enterprise Solutions',
-        amount: 7200,
-        status: 'paid',
-        due_date: '2025-07-25',
-        created_date: '2025-07-15',
-        invoice_number: 'INV-2025-005'
+    const fetchInvoices = async () => {
+      if (!publicKey) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+        console.log('Fetching all invoices from:', `${apiUrl}/api/invoices`);
+        
+        const response = await fetch(`${apiUrl}/api/invoices`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch invoices: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('All invoices fetched:', data);
+        
+        if (data.success && data.invoices) {
+          setInvoices(data.invoices);
+        } else {
+          throw new Error(data.message || 'Failed to load invoices');
+        }
+      } catch (err) {
+        console.error('Error fetching invoices:', err);
+        setError(err.message);
+        setInvoices([]); // Set empty array on error
+      } finally {
+        setLoading(false);
       }
-    ];
-    setInvoices(mockInvoices);
-  }, []);
+    };
+
+    fetchInvoices();
+  }, [publicKey]); // Only re-fetch if publicKey changes
 
   // Filter and sort invoices
   useEffect(() => {
     let filtered = invoices.filter(invoice => {
-      const matchesSearch = invoice.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           invoice.invoice_number.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = (invoice.client_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (invoice.invoice_number || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' || invoice.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
@@ -94,20 +83,20 @@ const AllInvoicesPage = () => {
       
       switch (sortBy) {
         case 'amount':
-          aValue = a.amount;
-          bValue = b.amount;
+          aValue = parseFloat(a.total_due || 0);
+          bValue = parseFloat(b.total_due || 0);
           break;
         case 'client_name':
-          aValue = a.client_name.toLowerCase();
-          bValue = b.client_name.toLowerCase();
+          aValue = (a.client_name || '').toLowerCase();
+          bValue = (b.client_name || '').toLowerCase();
           break;
         case 'due_date':
-          aValue = new Date(a.due_date);
-          bValue = new Date(b.due_date);
+          aValue = new Date(a.due_date || 0);
+          bValue = new Date(b.due_date || 0);
           break;
-        default:
-          aValue = new Date(a.created_date);
-          bValue = new Date(b.created_date);
+        default: // created_at
+          aValue = new Date(a.created_at || 0);
+          bValue = new Date(b.created_at || 0);
       }
 
       if (sortOrder === 'asc') {
@@ -125,13 +114,14 @@ const AllInvoicesPage = () => {
     return <Navigate to="/landing" />;
   }
 
-  // Get status color and icon
+  // Get status color and icon - show "pending" for all non-paid invoices
   const getStatusDisplay = (status) => {
     const statusConfig = {
-      draft: { color: 'bg-gray-100 text-gray-800', icon: FaEdit },
-      sent: { color: 'bg-blue-100 text-blue-800', icon: FaPaperPlane },
-      paid: { color: 'bg-green-100 text-green-800', icon: FaCheckCircle },
-      overdue: { color: 'bg-red-100 text-red-800', icon: FaTimesCircle }
+      paid: { color: 'bg-green-100 text-green-800', icon: FaCheckCircle, text: 'Paid' },
+      // All other statuses show as "pending"
+      draft: { color: 'bg-yellow-100 text-yellow-800', icon: FaClock, text: 'Pending' },
+      sent: { color: 'bg-yellow-100 text-yellow-800', icon: FaClock, text: 'Pending' },
+      overdue: { color: 'bg-yellow-100 text-yellow-800', icon: FaClock, text: 'Pending' }
     };
     return statusConfig[status] || statusConfig.draft;
   };
@@ -140,44 +130,71 @@ const AllInvoicesPage = () => {
     const statusDisplay = getStatusDisplay(invoice.status);
     const StatusIcon = statusDisplay.icon;
     
+    // Format amount safely
+    const amount = parseFloat(invoice.total_due || 0).toFixed(2);
+    
+    // Format dates safely
+    const formatDate = (dateString) => {
+      if (!dateString) return 'N/A';
+      try {
+        return new Date(dateString).toLocaleDateString();
+      } catch {
+        return 'N/A';
+      }
+    };
+    
     return (
       <tr className="hover:bg-gray-50 transition-colors">
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="font-medium text-gray-900">{invoice.invoice_number}</div>
+          <div className="font-medium text-gray-900">{invoice.invoice_number || 'N/A'}</div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-gray-900">{invoice.client_name}</div>
+          <div className="text-gray-900">{invoice.client_name || 'N/A'}</div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="font-semibold text-gray-900">${invoice.amount}</div>
-          <div className="text-sm text-gray-500">USDC</div>
+          <div className="font-semibold text-gray-900">${amount}</div>
+          <div className="text-sm text-gray-500">{invoice.currency || 'USD'}</div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${statusDisplay.color}`}>
             <StatusIcon className="mr-1" />
-            {invoice.status.toUpperCase()}
+            {statusDisplay.text}
           </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-          {new Date(invoice.due_date).toLocaleDateString()}
+          {formatDate(invoice.due_date)}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-          {new Date(invoice.created_date).toLocaleDateString()}
+          {formatDate(invoice.created_at)}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
           <div className="flex items-center justify-end space-x-2">
-            <button className="text-blue-600 hover:text-blue-800 p-1 rounded-md hover:bg-blue-50 transition-colors">
+            <button 
+              onClick={() => window.open(`${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/api/invoices/${invoice.id}/view`, '_blank')}
+              className="text-blue-600 hover:text-blue-800 p-1 rounded-md hover:bg-blue-50 transition-colors"
+              title="View Invoice"
+            >
               <FaEye />
             </button>
-            <button className="text-gray-600 hover:text-gray-800 p-1 rounded-md hover:bg-gray-50 transition-colors">
+            <button 
+              onClick={() => navigate(`/invoices/edit/${invoice.id}`)}
+              className="text-gray-600 hover:text-gray-800 p-1 rounded-md hover:bg-gray-50 transition-colors"
+              title="Edit Invoice"
+            >
               <FaEdit />
             </button>
-            {invoice.status === 'draft' && (
-              <button className="text-green-600 hover:text-green-800 p-1 rounded-md hover:bg-green-50 transition-colors">
+            {invoice.status !== 'paid' && invoice.client_email && (
+              <button 
+                className="text-green-600 hover:text-green-800 p-1 rounded-md hover:bg-green-50 transition-colors"
+                title="Send Email"
+              >
                 <FaPaperPlane />
               </button>
             )}
-            <button className="text-red-600 hover:text-red-800 p-1 rounded-md hover:bg-red-50 transition-colors">
+            <button 
+              className="text-red-600 hover:text-red-800 p-1 rounded-md hover:bg-red-50 transition-colors"
+              title="Delete Invoice"
+            >
               <FaTrash />
             </button>
           </div>
@@ -278,18 +295,39 @@ const AllInvoicesPage = () => {
 
       {/* Invoices Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800">
-              {filteredInvoices.length} Invoice{filteredInvoices.length !== 1 ? 's' : ''}
-            </h2>
-            <div className="text-sm text-gray-600">
-              Total Value: ${filteredInvoices.reduce((sum, inv) => sum + inv.amount, 0).toLocaleString()} USDC
+        {!loading && !error && (
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-800">
+                {filteredInvoices.length} Invoice{filteredInvoices.length !== 1 ? 's' : ''}
+              </h2>
+              <div className="text-sm text-gray-600">
+                Total Value: ${filteredInvoices.reduce((sum, inv) => sum + parseFloat(inv.total_due || 0), 0).toLocaleString()} {filteredInvoices[0]?.currency || 'USD'}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {filteredInvoices.length === 0 ? (
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <FaSpinner className="animate-spin text-3xl text-primary mr-3" />
+            <span className="text-lg text-gray-600">Loading invoices...</span>
+          </div>
+        ) : error ? (
+          /* Error State */
+          <div className="text-center py-12">
+            <FaTimesCircle className="text-4xl text-red-400 mb-4 mx-auto" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">Error Loading Invoices</h3>
+            <p className="text-gray-500 mb-4">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : filteredInvoices.length === 0 ? (
           <div className="text-center py-12">
             <FaFileInvoiceDollar className="text-4xl text-gray-400 mb-4 mx-auto" />
             <h3 className="text-lg font-semibold text-gray-600 mb-2">No Invoices Found</h3>

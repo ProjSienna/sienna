@@ -144,13 +144,14 @@ const InvoicesPage = () => {
     });
   };
 
-  // Get status color and icon
+  // Get status color and icon - show "pending" for all non-paid invoices
   const getStatusDisplay = (status) => {
     const statusConfig = {
-      draft: { color: 'bg-gray-100 text-gray-800', icon: FaEdit },
-      sent: { color: 'bg-blue-100 text-blue-800', icon: FaPaperPlane },
-      paid: { color: 'bg-green-100 text-green-800', icon: FaCheckCircle },
-      overdue: { color: 'bg-red-100 text-red-800', icon: FaTimesCircle }
+      paid: { color: 'bg-green-100 text-green-800', icon: FaCheckCircle, text: 'Paid' },
+      // All other statuses show as "pending"
+      draft: { color: 'bg-yellow-100 text-yellow-800', icon: FaClock, text: 'Pending' },
+      sent: { color: 'bg-yellow-100 text-yellow-800', icon: FaClock, text: 'Pending' },
+      overdue: { color: 'bg-yellow-100 text-yellow-800', icon: FaClock, text: 'Pending' }
     };
     return statusConfig[status] || statusConfig.draft;
   };
@@ -380,7 +381,7 @@ const InvoicesPage = () => {
                 </h4>
                 <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${statusDisplay.color}`}>
                   <StatusIcon className="mr-1" />
-                  {invoice.status.toUpperCase()}
+                  {statusDisplay.text}
                 </span>
                 <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${paymentBadge.color}`}>
                   <PaymentIcon className="mr-1" />
