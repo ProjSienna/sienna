@@ -484,8 +484,13 @@ const InvoiceCreatePage = () => {
       console.log('Invoice created:', result);
       
       // Store the created invoice information
+      console.log('Backend result object:', result);
+      console.log('Result ID:', result.id);
+      console.log('Result _id:', result._id);
+      console.log('Result databaseId:', result.databaseId);
+      
       setCreatedInvoice({
-        id: result.id || result._id || 'undefined',
+        id: result.databaseId || result.id || result._id,  // Use databaseId from backend
         invoiceNumber: formData.invoiceNumber,
         clientName: formData.billToName,
         clientEmail: formData.billToEmail,
@@ -511,8 +516,18 @@ const InvoiceCreatePage = () => {
   
   // Function to handle sending invoice via email
   const handleSendEmail = async () => {
+    console.log('handleSendEmail called');
+    console.log('createdInvoice object:', createdInvoice);
+    console.log('createdInvoice.id:', createdInvoice?.id);
+    
     if (!createdInvoice || !createdInvoice.clientEmail) {
       setError('Cannot send email: Missing client email address');
+      return;
+    }
+    
+    if (!createdInvoice.id) {
+      setError('Cannot send email: Invoice ID is missing');
+      console.error('Missing invoice ID in createdInvoice:', createdInvoice);
       return;
     }
     
@@ -521,16 +536,15 @@ const InvoiceCreatePage = () => {
       
       // API call to send the invoice via email
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      console.log('Sending email to API URL:', `${apiUrl}/api/invoices/${createdInvoice.id}/send-email`);
+      
       const response = await fetch(`${apiUrl}/api/invoices/${createdInvoice.id}/send-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: createdInvoice.clientEmail,
-          // The URL is already properly formatted from the backend
-          invoiceUrl: createdInvoice.url,
-          invoiceNumber: createdInvoice.invoiceNumber
+          paymentWalletAddress: publicKey?.toString()
         })
       });
       

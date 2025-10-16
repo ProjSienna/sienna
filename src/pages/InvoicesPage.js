@@ -17,7 +17,9 @@ import {
   FaBuilding,
   FaChartLine,
   FaCheckCircle,
-  FaTimesCircle
+  FaTimesCircle,
+  FaDollarSign,
+  FaEnvelope
 } from 'react-icons/fa';
 import { formatWalletAddress } from '../utils/solana';
 
@@ -38,45 +40,53 @@ const InvoicesPage = () => {
   const [invoicesLoading, setInvoicesLoading] = useState(true);
 
   // Fetch invoices from backend API
-  useEffect(() => {
-    const fetchInvoices = async () => {
-      try {
-        setInvoicesLoading(true);
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-        
-        // Fetch all invoices
-        const response = await fetch(`${apiUrl}/api/invoices`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch invoices');
-        }
-        
-        const data = await response.json();
-        if (data.success && data.invoices) {
-          // Sort by created_at descending (most recent first)
-          const sortedInvoices = data.invoices.sort((a, b) => 
-            new Date(b.created_at) - new Date(a.created_at)
-          );
-          
-          setRecentInvoices(sortedInvoices);
-          
-          // Calculate stats
-          const stats = {
-            total: sortedInvoices.length,
-            paid: sortedInvoices.filter(inv => inv.status === 'paid').length,
-            sent: sortedInvoices.filter(inv => inv.status === 'sent').length,
-            draft: sortedInvoices.filter(inv => inv.status === 'draft').length
-          };
-          setInvoiceStats(stats);
-        }
-      } catch (err) {
-        console.error('Error fetching invoices:', err);
-        // Set empty array on error so UI shows "No Invoices Yet"
-        setRecentInvoices([]);
-      } finally {
-        setInvoicesLoading(false);
+  const fetchInvoices = async () => {
+    try {
+      setInvoicesLoading(true);
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      
+      // Fetch all invoices
+      const response = await fetch(`${apiUrl}/api/invoices`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch invoices');
       }
-    };
+      
+      const data = await response.json();
+      console.log('Fetched invoices data:', data);
+      
+      if (data.success && data.invoices) {
+        // Debug: Log first invoice to see structure
+        if (data.invoices.length > 0) {
+          console.log('First invoice structure:', data.invoices[0]);
+          console.log('First invoice ID:', data.invoices[0].id);
+        }
+        
+        // Sort by created_at descending (most recent first)
+        const sortedInvoices = data.invoices.sort((a, b) => 
+          new Date(b.created_at) - new Date(a.created_at)
+        );
+        
+        setRecentInvoices(sortedInvoices);
+        
+        // Calculate stats
+        const stats = {
+          total: sortedInvoices.length,
+          paid: sortedInvoices.filter(inv => inv.status === 'paid').length,
+          sent: sortedInvoices.filter(inv => inv.status === 'sent').length,
+          draft: sortedInvoices.filter(inv => inv.status === 'draft').length
+        };
+        setInvoiceStats(stats);
+      }
+    } catch (err) {
+      console.error('Error fetching invoices:', err);
+      // Set empty array on error so UI shows "No Invoices Yet"
+      setRecentInvoices([]);
+    } finally {
+      setInvoicesLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchInvoices();
   }, []);
 
@@ -249,6 +259,7 @@ const InvoicesPage = () => {
 
   // Recent Invoice Card
   const RecentInvoiceCard = ({ invoice }) => {
+    const [sending, setSending] = useState(false);
     const statusDisplay = getStatusDisplay(invoice.status);
     const StatusIcon = statusDisplay.icon;
     
@@ -257,18 +268,123 @@ const InvoicesPage = () => {
       ? parseFloat(invoice.total_due) 
       : invoice.total_due;
     
+    // Get payment status badge
+    const getPaymentStatusBadge = (paymentStatus) => {
+      const badges = {
+        paid: { color: 'bg-green-100 text-green-800', icon: FaCheckCircle, text: 'Paid' },
+        unpaid: { color: 'bg-yellow-100 text-yellow-800', icon: FaClock, text: 'Unpaid' },
+        partial: { color: 'bg-blue-100 text-blue-800', icon: FaDollarSign, text: 'Partial' },
+        overdue: { color: 'bg-red-100 text-red-800', icon: FaTimesCircle, text: 'Overdue' }
+      };
+      return badges[paymentStatus] || badges.unpaid;
+    };
+    
+    const paymentBadge = getPaymentStatusBadge(invoice.payment_status);
+    const PaymentIcon = paymentBadge.icon;
+    
+    // Send invoice email
+    const handleSendEmail = async () => {
+      // Debug: Log the invoice object to see its structure
+      console.log('Invoice object:', invoice);
+      console.log('Invoice ID:', invoice.id);
+      
+      // Validation checks
+      if (!invoice.id) {
+        alert('❌ Invoice ID is missing. Please refresh the page and try again.');
+        console.error('Invoice object missing ID:', invoice);
+        return;
+      }
+      
+      if (!invoice.client_email) {
+        alert('❌ Client email is required to send invoice. Please add a client email to this invoice first.');
+        return;
+      }
+      
+      if (!publicKey) {
+        alert('❌ Please connect your wallet first to generate a payment link.');
+        return;
+      }
+      
+      // Confirm before sending
+      const confirmSend = window.confirm(
+        `📧 Send invoice ${invoice.invoice_number} to ${invoice.client_email}?\n\n` +
+        `This will:\n` +
+        `• Send a professional email to the client\n` +
+        `• Include a payment link for ${parseFloat(invoice.total_due).toFixed(2)} ${invoice.currency || 'USD'}\n` +
+        `• Update the invoice status to "sent"`
+      );
+      
+      if (!confirmSend) {
+        return;
+      }
+      
+      setSending(true);
+      try {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+        console.log(`Sending invoice email to: ${invoice.client_email}`);
+        console.log(`Payment wallet: ${publicKey.toString()}`);
+        
+        const response = await fetch(`${apiUrl}/api/invoices/${invoice.id}/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            paymentWalletAddress: publicKey.toString()
+          })
+        });
+        
+        const data = await response.json();
+        console.log('Email send response:', data);
+        
+        if (response.ok && data.success) {
+          alert(`✅ Invoice email sent successfully!\n\n` +
+                `📧 Sent to: ${invoice.client_email}\n` +
+                `📄 Invoice: ${invoice.invoice_number}\n` +
+                `💰 Amount: $${parseFloat(invoice.total_due).toFixed(2)} ${invoice.currency || 'USD'}\n\n` +
+                `The invoice list will refresh to show the updated status.`);
+          
+          // Refresh the invoice data to show updated status
+          await fetchInvoices();
+        } else {
+          // Handle API errors
+          const errorMessage = data.message || 'Unknown error occurred';
+          console.error('Email send failed:', data);
+          alert(`❌ Failed to send invoice email:\n\n${errorMessage}\n\nPlease check:\n• Your internet connection\n• Backend server is running\n• Email service is configured`);
+        }
+      } catch (error) {
+        console.error('Error sending invoice email:', error);
+        
+        // More specific error messages
+        let errorMessage = 'Failed to send invoice email';
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          errorMessage = 'Cannot connect to server. Please check if the backend is running.';
+        } else if (error.message.includes('NetworkError')) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        }
+        
+        alert(`❌ ${errorMessage}\n\nError details: ${error.message}`);
+      } finally {
+        setSending(false);
+      }
+    };
+    
     return (
       <div className="bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center">
+              <div className="flex items-center flex-wrap gap-2">
                 <h4 className="text-lg font-semibold text-gray-800">
                   {invoice.invoice_number}
                 </h4>
-                <span className={`ml-3 inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${statusDisplay.color}`}>
+                <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${statusDisplay.color}`}>
                   <StatusIcon className="mr-1" />
                   {invoice.status.toUpperCase()}
+                </span>
+                <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${paymentBadge.color}`}>
+                  <PaymentIcon className="mr-1" />
+                  {paymentBadge.text}
                 </span>
               </div>
               <div className="text-right">
@@ -296,34 +412,54 @@ const InvoicesPage = () => {
           </div>
         </div>
         
-        <div className="flex items-center justify-end space-x-2 mt-4 pt-4 border-t border-gray-200">
-          <button 
-            onClick={() => window.open(`${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/api/invoices/${invoice.id}/view`, '_blank')}
-            className="text-blue-600 hover:text-blue-800 p-2 rounded-md hover:bg-blue-50 transition-colors"
-            title="View Invoice"
-          >
-            <FaEye />
-          </button>
-          <button 
-            className="text-gray-600 hover:text-gray-800 p-2 rounded-md hover:bg-gray-50 transition-colors"
-            title="Edit Invoice"
-          >
-            <FaEdit />
-          </button>
-          {invoice.status === 'draft' && (
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+          <div className="flex items-center space-x-2">
+            {invoice.email_sent_at && (
+              <span className="text-xs text-gray-500 flex items-center">
+                <FaEnvelope className="mr-1" />
+                Sent {new Date(invoice.email_sent_at).toLocaleDateString()}
+              </span>
+            )}
+            {invoice.payment_link && (
+              <span className="text-xs text-blue-600 flex items-center">
+                <FaWallet className="mr-1" />
+                Payment link active
+              </span>
+            )}
+          </div>
+          <div className="flex items-center space-x-2">
             <button 
-              className="text-green-600 hover:text-green-800 p-2 rounded-md hover:bg-green-50 transition-colors"
-              title="Send Invoice"
+              onClick={() => window.open(`${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/api/invoices/${invoice.id}/view`, '_blank')}
+              className="text-blue-600 hover:text-blue-800 p-2 rounded-md hover:bg-blue-50 transition-colors"
+              title="View Invoice"
             >
-              <FaPaperPlane />
+              <FaEye />
             </button>
-          )}
-          <button 
-            className="text-red-600 hover:text-red-800 p-2 rounded-md hover:bg-red-50 transition-colors"
-            title="Delete Invoice"
-          >
-            <FaTrash />
-          </button>
+            <button 
+              className="text-gray-600 hover:text-gray-800 p-2 rounded-md hover:bg-gray-50 transition-colors"
+              title="Edit Invoice"
+            >
+              <FaEdit />
+            </button>
+            <button 
+              onClick={handleSendEmail}
+              disabled={sending || !invoice.client_email}
+              className={`p-2 rounded-md transition-colors ${
+                sending || !invoice.client_email
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-green-600 hover:text-green-800 hover:bg-green-50'
+              }`}
+              title={!invoice.client_email ? 'Client email required' : invoice.email_sent_at ? 'Resend Invoice' : 'Send Invoice'}
+            >
+              {sending ? <FaSpinner className="animate-spin" /> : <FaPaperPlane />}
+            </button>
+            <button 
+              className="text-red-600 hover:text-red-800 p-2 rounded-md hover:bg-red-50 transition-colors"
+              title="Delete Invoice"
+            >
+              <FaTrash />
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -454,8 +590,11 @@ const InvoicesPage = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {recentInvoices.slice(0, 3).map((invoice) => (
-              <RecentInvoiceCard key={invoice.id} invoice={invoice} />
+            {recentInvoices.slice(0, 3).map((invoice, index) => (
+              <RecentInvoiceCard 
+                key={invoice.id || invoice.invoice_number || `invoice-${index}`} 
+                invoice={invoice} 
+              />
             ))}
           </div>
         )}
