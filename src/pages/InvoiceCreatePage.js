@@ -1,13 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { FaArrowLeft, FaPaperPlane, FaSpinner, FaPlus, FaTrash, FaDownload } from 'react-icons/fa';
+import { FaArrowLeft, FaPaperPlane, FaSpinner, FaPlus, FaTrash, FaDownload, FaSearch, FaUser } from 'react-icons/fa';
 import { formatWalletAddress } from '../utils/solana';
+import { usePayees } from '../contexts/PayeesContext';
+import { useTaxCalculator } from '../hooks/useTaxCalculator';
 
 const InvoiceCreatePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { publicKey } = useWallet();
+  
+  const { payees } = usePayees();
+  const [showClientPicker, setShowClientPicker] = useState(false);
+  const [clientSearchTerm, setClientSearchTerm] = useState('');
+  const [previousClients, setPreviousClients] = useState([]);
+  const [showTaxHelper, setShowTaxHelper] = useState(false);
+  
+  // Use the tax calculator hook
+  const {
+    country: taxCountry,
+    setCountry: setTaxCountry,
+    state: taxState,
+    setState: setTaxState,
+    category: serviceCategory,
+    setCategory: setServiceCategory,
+    customRate: taxRate,
+    setCustomRate: setTaxRate,
+    getTaxInfo,
+    getStates,
+    getCountries
+  } = useTaxCalculator();
   
   const [formData, setFormData] = useState({
     // Payee Info (your business - who gets paid)
@@ -21,11 +44,12 @@ const InvoiceCreatePage = () => {
     payeeEmailChecked: false,
     payeePhoneChecked: false,
     
-    // Bill To Info (client)
+    // Bill To Info (client - separate from payee wallet)
     billToName: '',
     billToEmail: '',
     billToPhone: '',
     billToAddress: '',
+    billToWallet: '', // Client's wallet address (separate from business wallet)
     billToNameChecked: false,
     billToAddressChecked: false,
     billToEmailChecked: false,
@@ -52,6 +76,8 @@ const InvoiceCreatePage = () => {
     terms: 'NET_15',
     status: 'DRAFT',
     notes: '',
+    serviceCategory: 'general',
+    taxCountry: 'US',
     
     // Line Items
     items: [{
@@ -64,7 +90,6 @@ const InvoiceCreatePage = () => {
     
     // Summary
     subtotal: 0,
-    taxRate: 0,
     taxAmount: 0,
     discountType: 'none',
     discountValue: 0,
@@ -87,7 +112,7 @@ const InvoiceCreatePage = () => {
       return sum + (isNaN(amount) ? 0 : amount);
     }, 0);
 
-    const taxAmount = subtotal * (formData.taxRate / 100);
+    const taxAmount = subtotal * (taxRate / 100);
     let discountAmount = 0;
     
     if (formData.discountType === 'percentage' && formData.discountValue > 0) {
@@ -105,7 +130,7 @@ const InvoiceCreatePage = () => {
       discountAmount,
       total
     }));
-  }, [formData.items, formData.taxRate, formData.discountType, formData.discountValue]);
+  }, [formData.items, taxRate, formData.discountType, formData.discountValue]);
 
   // Initialize form with client data if available (Bill To information)
   useEffect(() => {
@@ -129,6 +154,111 @@ const InvoiceCreatePage = () => {
       setBusinessInfo(JSON.parse(stored));
     }
   }, []);
+
+  // Fetch previously billed clients from invoices or use payees
+  useEffect(() => {
+    const fetchPreviousClients = async () => {
+      if (!publicKey) return;
+      
+      try {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+        const response = await fetch(`${apiUrl}/api/invoices?user_wallet=${publicKey.toString()}`);
+        
+        if (response.ok) {
+          const invoices = await response.json();
+          // Extract unique clients from invoices
+          const clientsMap = new Map();
+          invoices.forEach(invoice => {
+            if (invoice.billToName) {
+              clientsMap.set(invoice.billToEmail || invoice.billToName, {
+                name: invoice.billToName,
+                email: invoice.billToEmail || '',
+                phone: invoice.billToPhone || '',
+                address: invoice.billToAddress || '',
+                wallet: invoice.billToWallet || ''
+              });
+            }
+          });
+          setPreviousClients(Array.from(clientsMap.values()));
+        }
+      } catch (err) {
+        console.error('Error fetching previous clients:', err);
+        // Fallback to payees if API fails
+        setPreviousClients(payees.map(p => ({
+          name: p.name,
+          email: p.email || '',
+          phone: p.phone || '',
+          address: p.address || '',
+          wallet: p.walletAddress || ''
+        })));
+      }
+    };
+    
+    fetchPreviousClients();
+  }, [publicKey, payees]);
+
+
+  // Auto-calculate due date based on payment terms and issue date
+  useEffect(() => {
+    if (!formData.issueDate || !formData.terms) return;
+
+    const calculateDueDate = () => {
+      const issueDate = new Date(formData.issueDate);
+      let dueDate = new Date(issueDate);
+
+      switch (formData.terms) {
+        case 'NET_7':
+          dueDate.setDate(issueDate.getDate() + 7);
+          break;
+        case 'NET_15':
+          dueDate.setDate(issueDate.getDate() + 15);
+          break;
+        case 'NET_30':
+          dueDate.setDate(issueDate.getDate() + 30);
+          break;
+        case 'NET_60':
+          dueDate.setDate(issueDate.getDate() + 60);
+          break;
+        case 'DUE_ON_RECEIPT':
+          dueDate = new Date(issueDate);
+          break;
+        default:
+          dueDate.setDate(issueDate.getDate() + 15);
+      }
+
+      const formattedDueDate = dueDate.toISOString().split('T')[0];
+      
+      // Only update if the calculated date is different from current
+      if (formattedDueDate !== formData.dueDate) {
+        setFormData(prev => ({
+          ...prev,
+          dueDate: formattedDueDate
+        }));
+      }
+    };
+
+    calculateDueDate();
+  }, [formData.issueDate, formData.terms]);
+
+  // Select a previous client
+  const handleSelectClient = (client) => {
+    setFormData(prev => ({
+      ...prev,
+      billToName: client.name,
+      billToEmail: client.email,
+      billToPhone: client.phone,
+      billToAddress: client.address,
+      billToWallet: client.wallet
+    }));
+    setShowClientPicker(false);
+    setClientSearchTerm('');
+  };
+
+  // Filter clients based on search
+  const filteredClients = previousClients.filter(client =>
+    client.name.toLowerCase().includes(clientSearchTerm.toLowerCase()) ||
+    (client.email && client.email.toLowerCase().includes(clientSearchTerm.toLowerCase()))
+  );
 
   // Auto-populate bank information from business info
   const loadBankInfo = () => {
@@ -808,10 +938,22 @@ const InvoiceCreatePage = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                {/* Payee Information (legacy, keep for reference or remove if not needed) */}
+                {/* Bill To Information (Client) */}
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Bill To</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-medium text-gray-900">Bill To (Client)</h3>
+                      {previousClients.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowClientPicker(true)}
+                          className="flex items-center px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+                        >
+                          <FaUser className="mr-1" />
+                          Select Previous Client
+                        </button>
+                      )}
+                    </div>
                     <div className="space-y-4">
                       <div>
                         <label htmlFor="billToName" className="block text-sm font-medium text-gray-700">Name</label>
@@ -866,22 +1008,23 @@ const InvoiceCreatePage = () => {
                       </div>
                       
                       <div>
-                        <label htmlFor="payeeWallet" className="block text-sm font-medium text-gray-700">Wallet Address</label>
+                        <label htmlFor="billToWallet" className="block text-sm font-medium text-gray-700">
+                          Client Wallet Address <span className="text-gray-400 text-xs">(Optional)</span>
+                        </label>
                         <div className="mt-1 relative rounded-md shadow-sm">
                           <input
                             type="text"
-                            id="payeeWallet"
-                            name="payeeWallet"
-                            value={formData.payeeWallet}
+                            id="billToWallet"
+                            name="billToWallet"
+                            value={formData.billToWallet}
                             onChange={handleChange}
-                            className="block w-full pr-10 border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                            placeholder="Wallet address"
-                            required
+                            className="block w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm font-mono"
+                            placeholder="Client's wallet address (if paying via crypto)"
                           />
                         </div>
-                        {formData.payeeWallet && (
+                        {formData.billToWallet && (
                           <p className="mt-1 text-xs text-gray-500">
-                            {formatWalletAddress(formData.payeeWallet)}
+                            {formatWalletAddress(formData.billToWallet)}
                           </p>
                         )}
                       </div>
@@ -936,16 +1079,21 @@ const InvoiceCreatePage = () => {
                       </div>
                       
                       <div>
-                        <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">Due Date</label>
+                        <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">
+                          Due Date <span className="text-xs text-gray-400">(Auto-calculated)</span>
+                        </label>
                         <input
                           type="date"
                           id="dueDate"
                           name="dueDate"
                           value={formData.dueDate}
                           onChange={handleChange}
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-blue-50"
                           required
                         />
+                        <p className="mt-1 text-xs text-gray-500">
+                          Automatically set based on payment terms. You can override if needed.
+                        </p>
                       </div>
                       
                       <div>
@@ -1079,22 +1227,100 @@ const InvoiceCreatePage = () => {
                       <span>${formData.subtotal.toFixed(2)}</span>
                     </div>
                     
-                    <div className="flex justify-between text-sm text-gray-600 mb-2">
-                      <div>
-                        <span>Tax</span>
-                        <select
-                          value={formData.taxRate}
-                          onChange={(e) => setFormData(prev => ({ ...prev, taxRate: parseFloat(e.target.value) }))}
-                          className="ml-2 border-0 border-b border-gray-300 focus:ring-0 focus:border-primary text-sm p-0"
+                    <div className="mb-4 pb-3 border-b border-gray-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700">Tax Configuration</span>
+                        <button
+                          type="button"
+                          onClick={() => setShowTaxHelper(!showTaxHelper)}
+                          className="text-xs text-blue-600 hover:text-blue-800"
                         >
-                          <option value="0">0%</option>
-                          <option value="5">5%</option>
-                          <option value="10">10%</option>
-                          <option value="15">15%</option>
-                          <option value="20">20%</option>
-                        </select>
+                          {showTaxHelper ? 'Hide' : 'Show'} Tax Helper
+                        </button>
                       </div>
-                      <span>${formData.taxAmount.toFixed(2)}</span>
+                      
+                      {showTaxHelper && (
+                        <div className="bg-blue-50 p-3 rounded-lg mb-3 space-y-2">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Country/Region</label>
+                            <select
+                              value={taxCountry}
+                              onChange={(e) => {
+                                setTaxCountry(e.target.value);
+                                setTaxState(''); // Reset state when country changes
+                              }}
+                              className="w-full text-sm border border-gray-300 rounded-md py-1 px-2 focus:ring-primary focus:border-primary"
+                            >
+                              {getCountries().map(country => (
+                                <option key={country.code} value={country.code}>
+                                  {country.name} ({country.taxType})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                              {taxCountry === 'US' ? 'State' : taxCountry === 'CA' ? 'Province' : 'Region'}
+                            </label>
+                            <select
+                              value={taxState}
+                              onChange={(e) => setTaxState(e.target.value)}
+                              className="w-full text-sm border border-gray-300 rounded-md py-1 px-2 focus:ring-primary focus:border-primary"
+                            >
+                              <option value="">Select {taxCountry === 'US' ? 'State' : taxCountry === 'CA' ? 'Province' : 'Region'}</option>
+                              {Object.entries(getStates(taxCountry)).map(([code, data]) => (
+                                <option key={code} value={code}>
+                                  {data.name} - {data.rate}%
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Service/Product Category</label>
+                            <select
+                              value={serviceCategory}
+                              onChange={(e) => setServiceCategory(e.target.value)}
+                              className="w-full text-sm border border-gray-300 rounded-md py-1 px-2 focus:ring-primary focus:border-primary"
+                            >
+                              <option value="general">General Services</option>
+                              <option value="consulting">Consulting/Professional Services</option>
+                              <option value="digital">Digital Products</option>
+                              <option value="saas">SaaS/Software</option>
+                              <option value="goods">Physical Goods</option>
+                            </select>
+                          </div>
+                          
+                          {getTaxInfo().stateName && (
+                            <div className="text-xs text-blue-700 bg-blue-100 p-2 rounded space-y-1">
+                              <div><strong>Tax Type:</strong> {getTaxInfo().taxType}</div>
+                              <div><strong>Region:</strong> {getTaxInfo().stateName}, {getTaxInfo().countryName}</div>
+                              <div><strong>Rate:</strong> {getTaxInfo().note}</div>
+                              {getTaxInfo().categoryNote && (
+                                <div><strong>Category:</strong> {getTaxInfo().categoryNote}</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between items-center text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <span>Tax Rate</span>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            value={taxRate}
+                            onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+                            className="w-16 border border-gray-300 rounded px-2 py-1 text-sm focus:ring-primary focus:border-primary"
+                          />
+                          <span className="text-xs">%</span>
+                        </div>
+                        <span className="font-medium">${formData.taxAmount.toFixed(2)}</span>
+                      </div>
                     </div>
                     
                     <div className="flex justify-between text-sm text-gray-600 mb-2">
@@ -1161,6 +1387,101 @@ const InvoiceCreatePage = () => {
           )}
         </div>
       </div>
+
+      {/* Client Picker Modal */}
+      {showClientPicker && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[80vh] overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-800">Select Previous Client</h2>
+              <button
+                onClick={() => {
+                  setShowClientPicker(false);
+                  setClientSearchTerm('');
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6">
+              {/* Search Bar */}
+              <div className="mb-4">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaSearch className="text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    className="pl-10 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                    placeholder="Search by name or email..."
+                    value={clientSearchTerm}
+                    onChange={(e) => setClientSearchTerm(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              {/* Client List */}
+              <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+                {filteredClients.length > 0 ? (
+                  <ul className="divide-y divide-gray-200">
+                    {filteredClients.map((client, index) => (
+                      <li
+                        key={index}
+                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() => handleSelectClient(client)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-800">{client.name}</p>
+                            {client.email && (
+                              <p className="text-sm text-gray-500 mt-1">{client.email}</p>
+                            )}
+                            {client.phone && (
+                              <p className="text-sm text-gray-500">{client.phone}</p>
+                            )}
+                            {client.address && (
+                              <p className="text-sm text-gray-400 mt-1">{client.address}</p>
+                            )}
+                            {client.wallet && (
+                              <p className="text-xs text-gray-400 font-mono mt-1">
+                                {formatWalletAddress(client.wallet)}
+                              </p>
+                            )}
+                          </div>
+                          <FaUser className="text-primary ml-4 flex-shrink-0" />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    {clientSearchTerm ? (
+                      <p>No clients found matching &quot;{clientSearchTerm}&quot;</p>
+                    ) : (
+                      <p>No previous clients found</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => {
+                  setShowClientPicker(false);
+                  setClientSearchTerm('');
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
