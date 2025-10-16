@@ -29,39 +29,55 @@ const InvoicesPage = () => {
   const [error, setError] = useState(null);
   const [businessInfo, setBusinessInfo] = useState(null);
   const [recentInvoices, setRecentInvoices] = useState([]);
+  const [invoiceStats, setInvoiceStats] = useState({
+    total: 0,
+    paid: 0,
+    sent: 0,
+    draft: 0
+  });
+  const [invoicesLoading, setInvoicesLoading] = useState(true);
 
-  // Mock recent invoices data (replace with API call later)
+  // Fetch invoices from backend API
   useEffect(() => {
-    const mockInvoices = [
-      {
-        id: 'INV-001',
-        client_name: 'Tech Corp Inc.',
-        amount: 2500,
-        status: 'sent',
-        due_date: '2025-08-15',
-        created_date: '2025-07-20',
-        invoice_number: 'INV-2025-001'
-      },
-      {
-        id: 'INV-002',
-        client_name: 'Design Studio LLC',
-        amount: 1800,
-        status: 'paid',
-        due_date: '2025-07-30',
-        created_date: '2025-07-18',
-        invoice_number: 'INV-2025-002'
-      },
-      {
-        id: 'INV-003',
-        client_name: 'Marketing Agency',
-        amount: 3200,
-        status: 'draft',
-        due_date: '2025-08-20',
-        created_date: '2025-07-22',
-        invoice_number: 'INV-2025-003'
+    const fetchInvoices = async () => {
+      try {
+        setInvoicesLoading(true);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+        
+        // Fetch all invoices
+        const response = await fetch(`${apiUrl}/api/invoices`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch invoices');
+        }
+        
+        const data = await response.json();
+        if (data.success && data.invoices) {
+          // Sort by created_at descending (most recent first)
+          const sortedInvoices = data.invoices.sort((a, b) => 
+            new Date(b.created_at) - new Date(a.created_at)
+          );
+          
+          setRecentInvoices(sortedInvoices);
+          
+          // Calculate stats
+          const stats = {
+            total: sortedInvoices.length,
+            paid: sortedInvoices.filter(inv => inv.status === 'paid').length,
+            sent: sortedInvoices.filter(inv => inv.status === 'sent').length,
+            draft: sortedInvoices.filter(inv => inv.status === 'draft').length
+          };
+          setInvoiceStats(stats);
+        }
+      } catch (err) {
+        console.error('Error fetching invoices:', err);
+        // Set empty array on error so UI shows "No Invoices Yet"
+        setRecentInvoices([]);
+      } finally {
+        setInvoicesLoading(false);
       }
-    ];
-    setRecentInvoices(mockInvoices);
+    };
+
+    fetchInvoices();
   }, []);
 
   // Load business info from localStorage
@@ -203,24 +219,30 @@ const InvoicesPage = () => {
       </div>
 
       <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <p className="text-lg font-semibold text-gray-800">{recentInvoices.length}</p>
-            <p className="text-xs text-gray-600">Total</p>
+        {invoicesLoading ? (
+          <div className="text-center py-2">
+            <FaSpinner className="animate-spin text-gray-400 mx-auto" />
           </div>
-          <div>
-            <p className="text-lg font-semibold text-green-600">
-              {recentInvoices.filter(inv => inv.status === 'paid').length}
-            </p>
-            <p className="text-xs text-gray-600">Paid</p>
+        ) : (
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div>
+              <p className="text-lg font-semibold text-gray-800">{invoiceStats.total}</p>
+              <p className="text-xs text-gray-600">Total</p>
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-green-600">
+                {invoiceStats.paid}
+              </p>
+              <p className="text-xs text-gray-600">Paid</p>
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-blue-600">
+                {invoiceStats.sent}
+              </p>
+              <p className="text-xs text-gray-600">Pending</p>
+            </div>
           </div>
-          <div>
-            <p className="text-lg font-semibold text-blue-600">
-              {recentInvoices.filter(inv => inv.status === 'sent').length}
-            </p>
-            <p className="text-xs text-gray-600">Pending</p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -229,6 +251,11 @@ const InvoicesPage = () => {
   const RecentInvoiceCard = ({ invoice }) => {
     const statusDisplay = getStatusDisplay(invoice.status);
     const StatusIcon = statusDisplay.icon;
+    
+    // Format the total_due as a number (it comes as a Decimal from Prisma)
+    const totalAmount = typeof invoice.total_due === 'string' 
+      ? parseFloat(invoice.total_due) 
+      : invoice.total_due;
     
     return (
       <div className="bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow p-4">
@@ -245,8 +272,8 @@ const InvoicesPage = () => {
                 </span>
               </div>
               <div className="text-right">
-                <p className="text-lg font-semibold text-gray-800">${invoice.amount}</p>
-                <p className="text-sm text-gray-600">USDC</p>
+                <p className="text-lg font-semibold text-gray-800">${totalAmount.toFixed(2)}</p>
+                <p className="text-sm text-gray-600">USD</p>
               </div>
             </div>
             
@@ -258,30 +285,43 @@ const InvoicesPage = () => {
               
               <div className="flex items-center text-sm text-gray-600">
                 <FaCalendarAlt className="mr-2 text-gray-400" />
-                <span>Due: {new Date(invoice.due_date).toLocaleDateString()}</span>
+                <span>Due: {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A'}</span>
               </div>
               
               <div className="flex items-center text-sm text-gray-600">
                 <FaCalendarAlt className="mr-2 text-gray-400" />
-                <span>Created: {new Date(invoice.created_date).toLocaleDateString()}</span>
+                <span>Created: {new Date(invoice.created_at).toLocaleDateString()}</span>
               </div>
             </div>
           </div>
         </div>
         
         <div className="flex items-center justify-end space-x-2 mt-4 pt-4 border-t border-gray-200">
-          <button className="text-blue-600 hover:text-blue-800 p-2 rounded-md hover:bg-blue-50 transition-colors">
+          <button 
+            onClick={() => window.open(`${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/api/invoices/${invoice.id}/view`, '_blank')}
+            className="text-blue-600 hover:text-blue-800 p-2 rounded-md hover:bg-blue-50 transition-colors"
+            title="View Invoice"
+          >
             <FaEye />
           </button>
-          <button className="text-gray-600 hover:text-gray-800 p-2 rounded-md hover:bg-gray-50 transition-colors">
+          <button 
+            className="text-gray-600 hover:text-gray-800 p-2 rounded-md hover:bg-gray-50 transition-colors"
+            title="Edit Invoice"
+          >
             <FaEdit />
           </button>
           {invoice.status === 'draft' && (
-            <button className="text-green-600 hover:text-green-800 p-2 rounded-md hover:bg-green-50 transition-colors">
+            <button 
+              className="text-green-600 hover:text-green-800 p-2 rounded-md hover:bg-green-50 transition-colors"
+              title="Send Invoice"
+            >
               <FaPaperPlane />
             </button>
           )}
-          <button className="text-red-600 hover:text-red-800 p-2 rounded-md hover:bg-red-50 transition-colors">
+          <button 
+            className="text-red-600 hover:text-red-800 p-2 rounded-md hover:bg-red-50 transition-colors"
+            title="Delete Invoice"
+          >
             <FaTrash />
           </button>
         </div>
@@ -395,7 +435,12 @@ const InvoicesPage = () => {
           </button>
         </div>
 
-        {recentInvoices.length === 0 ? (
+        {invoicesLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <FaSpinner className="animate-spin text-3xl text-primary mr-3" />
+            <span className="text-lg text-gray-600">Loading invoices...</span>
+          </div>
+        ) : recentInvoices.length === 0 ? (
           <div className="text-center py-12">
             <FaFileInvoiceDollar className="text-4xl text-gray-400 mb-4 mx-auto" />
             <h3 className="text-lg font-semibold text-gray-600 mb-2">No Invoices Yet</h3>

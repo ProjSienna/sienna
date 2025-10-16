@@ -370,8 +370,9 @@ const InvoiceCreatePage = () => {
           issue_date: formData.issueDate,
           due_date: formData.dueDate,
           currency: "USD",
-          tax_rate: parseFloat(formData.taxRate) / 100,
+          tax_rate: parseFloat(taxRate) / 100,
           payment_terms: formData.terms.replace('_', ' '),
+          status: formData.status
         },
         business_info: (() => {
           const businessInfo = JSON.parse(localStorage.getItem('businessInfo')) || {
@@ -400,19 +401,20 @@ const InvoiceCreatePage = () => {
           };
         })(),
         client_info: {
-          name: formData.payeeName,
+          name: formData.billToName,
           contact: {
-            name: formData.payeeName,
-            email: formData.payeeEmail,
-            phone: formData.payeePhone
+            name: formData.billToName,
+            email: formData.billToEmail,
+            phone: formData.billToPhone
           },
           address: {
-            street: formData.payeeAddress.split('\n')[0] || '',
-            city: formData.payeeAddress.split('\n')[1]?.split(',')[0]?.trim() || '',
-            state: formData.payeeAddress.split(', ')[1]?.split(' ')[0] || '',
-            zip: formData.payeeAddress.match(/\d{5}(-\d{4})?/)?.[0] || '',
+            street: formData.billToAddress.split('\n')[0] || '',
+            city: formData.billToAddress.split('\n')[1]?.split(',')[0]?.trim() || '',
+            state: formData.billToAddress.split(', ')[1]?.split(' ')[0] || '',
+            zip: formData.billToAddress.match(/\d{5}(-\d{4})?/)?.[0] || '',
             country: "USA"
-          }
+          },
+          wallet_address: formData.billToWallet || ''
         },
         line_items: formData.items.map(item => ({
           description: item.description,
@@ -423,7 +425,15 @@ const InvoiceCreatePage = () => {
         summary: {
           subtotal: formData.subtotal,
           tax_amount: formData.taxAmount,
+          discount_type: formData.discountType,
+          discount_value: formData.discountValue,
+          discount_amount: formData.discountAmount,
           total_due: formData.total
+        },
+        tax_info: {
+          country: taxCountry,
+          state: taxState,
+          service_category: serviceCategory
         },
         notes: formData.notes,
         footer: "Thank you for your business!",
@@ -433,14 +443,16 @@ const InvoiceCreatePage = () => {
             account_number: formData.bankAccount,
             routing_number: formData.bankRouting,
             swift_code: formData.bankType === 'wire' ? formData.swiftCode : '',
-            account_holder: formData.payeeName
+            account_holder: formData.payeeName,
+            bank_type: formData.bankType
           },
           crypto: {
             wallet_address: formData.payeeWallet,
             chain_type: formData.chainType || '',
             token: formData.token || ''
           }
-        }
+        },
+        user_wallet: publicKey?.toString() || ''
       };
 
       // Get business name from the same source as the invoice data
@@ -448,8 +460,7 @@ const InvoiceCreatePage = () => {
     
     const requestData = {
       invoiceData,
-      businessName: businessInfo.name,
-      templateName: formData.templateName
+      businessName: businessInfo.name
     };
 
       // Make the API call
@@ -476,8 +487,8 @@ const InvoiceCreatePage = () => {
       setCreatedInvoice({
         id: result.id || result._id || 'undefined',
         invoiceNumber: formData.invoiceNumber,
-        clientName: formData.payeeName,
-        clientEmail: formData.payeeEmail,
+        clientName: formData.billToName,
+        clientEmail: formData.billToEmail,
         // Use the viewUrl from the backend response
         url: `${apiUrl}${result.viewUrl}`
       });
