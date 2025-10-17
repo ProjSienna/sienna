@@ -46,7 +46,8 @@ const usePaymentRequestData = () => {
           throw new Error(errorData.message || 'Failed to fetch transaction details');
         }
         
-        const transactionData = await response.json();
+        const responseData = await response.json();
+        const transactionData = responseData.transaction || responseData;
         
         // Format the data as needed for the UI
         const formattedData = {
@@ -62,10 +63,12 @@ const usePaymentRequestData = () => {
           },
           request: {
             amount: transactionData.amount || '0',
-            description: transactionData.memo || 'Payment request',
+            description: transactionData.memo || (transactionData.transaction_type === 'invoice_payment' ? 'Invoice Payment' : 'Payment request'),
             dueDate: transactionData.due_date || null,
             id: transactionData.id
-          }
+          },
+          transaction_type: transactionData.transaction_type || 'payment_request',
+          invoice_id: transactionData.invoice_id || null
         };
         
         console.log('debug: ', formattedData);
@@ -321,13 +324,15 @@ const PayRequestPage = () => {
           {/* Header */}
           <div className="bg-primary bg-opacity-10 p-6 border-b border-primary border-opacity-20">
             <h1 className="text-3xl font-bold text-primary text-center">
-              Payment Request 
+              {paymentData?.transaction_type === 'invoice_payment' ? 'Invoice Payment' : 'Payment Request'}
               <span className="inline-block ml-2 animate-bounce">
                 <FaMoneyBillWave />
               </span>
             </h1>
             <p className="text-center text-gray-600 mt-2">
-              Someone is requesting a payment from you
+              {paymentData?.transaction_type === 'invoice_payment' 
+                ? 'You have an invoice to pay' 
+                : 'Someone is requesting a payment from you'}
             </p>
           </div>
 

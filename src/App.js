@@ -10,7 +10,6 @@ import LandingPage from './pages/LandingPage';
 import GrowthPage from './pages/GrowthPage';
 import PayeesPage from './pages/PayeesPage';
 import PayrollPage from './pages/PayrollPage';
-import PaymentPage from './pages/PaymentPage';
 import PayRequestPage from './pages/PayRequestPage';
 import InvoicesPage from './pages/InvoicesPage';
 import InvoiceCreatePage from './pages/InvoiceCreatePage';
@@ -40,7 +39,6 @@ function App() {
                     <Route path="/payroll" element={<PayeesPage />} />
                     <Route path="/payroll/run" element={<PayrollPage />} />
                     <Route path="/history" element={<PayeesPage initialTab="history" />} />
-                    <Route path="/pay" element={<PaymentPage />} />
                     <Route path="/pay-request" element={<PayRequestPage />} />
                     <Route path="/invoices" element={<InvoicesPage />} />
                     <Route path="/invoices/create" element={<InvoiceCreatePage />} />
