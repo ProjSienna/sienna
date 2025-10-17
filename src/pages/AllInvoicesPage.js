@@ -41,9 +41,10 @@ const AllInvoicesPage = () => {
         setError(null);
         
         const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-        console.log('Fetching all invoices from:', `${apiUrl}/api/invoices`);
+        const url = `${apiUrl}/api/invoices?user_wallet=${publicKey.toString()}`;
+        console.log('Fetching user invoices from:', url);
         
-        const response = await fetch(`${apiUrl}/api/invoices`);
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`Failed to fetch invoices: ${response.status} ${response.statusText}`);
         }
@@ -52,6 +53,7 @@ const AllInvoicesPage = () => {
         console.log('All invoices fetched:', data);
         
         if (data.success && data.invoices) {
+          console.log(`Frontend received ${data.invoices.length} invoices for user`);
           setInvoices(data.invoices);
         } else {
           throw new Error(data.message || 'Failed to load invoices');
@@ -374,8 +376,11 @@ const AllInvoicesPage = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredInvoices.map((invoice) => (
-                  <InvoiceRow key={invoice.id} invoice={invoice} />
+                {filteredInvoices.map((invoice, index) => (
+                  <InvoiceRow 
+                    key={invoice.id || `${invoice.invoice_number}-${index}`} 
+                    invoice={invoice} 
+                  />
                 ))}
               </tbody>
             </table>

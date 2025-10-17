@@ -41,12 +41,15 @@ const InvoicesPage = () => {
 
   // Fetch invoices from backend API
   const fetchInvoices = async () => {
+    if (!publicKey) return;
+    
     try {
       setInvoicesLoading(true);
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
       
-      // Fetch all invoices
-      const response = await fetch(`${apiUrl}/api/invoices`);
+      // Fetch invoices for current user
+      const url = `${apiUrl}/api/invoices?user_wallet=${publicKey.toString()}`;
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch invoices');
       }
@@ -88,7 +91,7 @@ const InvoicesPage = () => {
 
   useEffect(() => {
     fetchInvoices();
-  }, []);
+  }, [publicKey]);
 
   // Load business info from localStorage
   useEffect(() => {
