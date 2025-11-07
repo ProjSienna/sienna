@@ -4,6 +4,7 @@ import { FaCode, FaCopy, FaCheck, FaReact, FaPython, FaTerminal, FaGlobe, FaLigh
 const ApiPage = () => {
   const [copiedEndpoint, setCopiedEndpoint] = useState(null);
   const [activeTabs, setActiveTabs] = useState({});
+  const [isClientExampleExpanded, setIsClientExampleExpanded] = useState(false);
 
   const handleCopy = (text, endpoint) => {
     navigator.clipboard.writeText(text);
@@ -174,6 +175,131 @@ print(response.json())`
             <p className="text-gray-700">
               Our system analyzes previous interactions to tailor communication style and follow-up frequency for better payment outcomes.
             </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-10">
+        <div className="bg-yellow-50 p-6 rounded-lg border-l-4 border-yellow-500">
+          <h3 className="text-lg font-semibold text-yellow-800 mb-2">🧪 Testing with Devnet</h3>
+          <p className="text-gray-700 mb-3">
+            You can test the x402 payment API using Solana devnet before deploying to production. Simply add <code className="bg-yellow-100 px-2 py-1 rounded text-sm">?network=devnet</code> to your API requests.
+          </p>
+          <div className="bg-white p-3 rounded border border-yellow-200 font-mono text-sm overflow-x-auto">
+            https://api.projectsienna.xyz/api/payment?network=devnet&amount=0.5
+          </div>
+          <p className="text-gray-600 text-sm mt-3">
+            Devnet uses test USDC tokens, so you can experiment without real funds. Get devnet USDC from the <a href="https://spl-token-faucet.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Solana Token Faucet</a>.
+          </p>
+        </div>
+      </div>
+
+      <div className="mb-10">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200 overflow-hidden">
+          <button
+            onClick={() => setIsClientExampleExpanded(!isClientExampleExpanded)}
+            className="w-full p-6 text-left hover:bg-blue-100 transition-colors flex items-center justify-between"
+          >
+            <div>
+              <h3 className="text-xl font-bold text-blue-900 mb-2">Client-Side Integration Example</h3>
+              <p className="text-gray-700">
+                Click to see how to integrate x402 payments using TypeScript and Solana Web3.js
+              </p>
+            </div>
+            <span className="text-2xl text-blue-900">{isClientExampleExpanded ? '−' : '+'}</span>
+          </button>
+          
+          {isClientExampleExpanded && (
+            <div className="p-6 pt-0 border-t border-blue-200">
+              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                <code>{`import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { 
+  getAssociatedTokenAddress, 
+  createAssociatedTokenAccountInstruction,
+  createTransferInstruction 
+} from '@solana/spl-token';
+
+// 1. Request payment requirements
+const response = await fetch('https://api.projectsienna.xyz/api/payment?amount=5');
+const { payment } = await response.json();
+
+// 2. Create transaction
+const connection = new Connection('https://api.mainnet-beta.solana.com');
+const transaction = new Transaction();
+
+// 3. Add token transfer instruction
+const transferInstruction = createTransferInstruction(
+  await getAssociatedTokenAddress(
+    new PublicKey(payment.mint),
+    payerPublicKey
+  ),
+  new PublicKey(payment.tokenAccount),
+  payerPublicKey,
+  payment.amount
+);
+transaction.add(transferInstruction);
+
+// 4. Sign and send transaction
+const signedTx = await wallet.signTransaction(transaction);
+const serialized = signedTx.serialize().toString('base64');
+
+// 5. Submit payment proof
+await fetch('https://api.projectsienna.xyz/api/payment', {
+  method: 'GET',
+  headers: {
+    'X-Payment': JSON.stringify({
+      network: 'solana:mainnet',
+      serializedTransaction: serialized
+    })
+  }
+});`}</code>
+              </pre>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Frontend Implementation Use Cases</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">💳 Paywalls & Premium Content</h3>
+            <p className="text-gray-700 mb-3">
+              Gate premium content behind x402 payments. When users try to access premium articles, videos, or features, request payment before unlocking content.
+            </p>
+            <div className="bg-gray-50 p-3 rounded text-sm">
+              <strong>Example:</strong> Blog platform where readers pay 0.10 USDC per article, or subscription service with monthly USDC payments.
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">🛒 E-commerce Checkout</h3>
+            <p className="text-gray-700 mb-3">
+              Integrate crypto payments into your checkout flow. Request payment at checkout and verify on-chain before order fulfillment.
+            </p>
+            <div className="bg-gray-50 p-3 rounded text-sm">
+              <strong>Example:</strong> Online store accepting USDC payments with instant settlement, or marketplace with escrow-free transactions.
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">🎮 In-App Purchases</h3>
+            <p className="text-gray-700 mb-3">
+              Enable microtransactions for gaming, virtual goods, or app features. Users pay small amounts of USDC for power-ups, skins, or premium features.
+            </p>
+            <div className="bg-gray-50 p-3 rounded text-sm">
+              <strong>Example:</strong> Game where players buy items for 0.50 USDC, or productivity app with feature unlocks.
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">🤖 API Usage Metering</h3>
+            <p className="text-gray-700 mb-3">
+              Charge for API usage on a per-request basis. Each API call requires a small USDC payment, enabling pay-as-you-go pricing models.
+            </p>
+            <div className="bg-gray-50 p-3 rounded text-sm">
+              <strong>Example:</strong> AI API charging 0.01 USDC per request, or data API with usage-based pricing.
+            </div>
           </div>
         </div>
       </div>

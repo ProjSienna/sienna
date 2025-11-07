@@ -52,7 +52,7 @@ const Navbar = () => {
                   isActive('/api') ? 'border-secondary' : 'border-transparent'
                 } ${isActive('/api')} hover:text-secondary transition-colors`}
               >
-                <FaCode className="mr-2" /> API
+                <FaCode className="mr-2" /> x402 API
               </Link>
             </div>
           </div>
@@ -93,7 +93,7 @@ const Navbar = () => {
             className={`flex flex-col items-center px-3 py-2 text-sm font-medium ${isActive('/api')} hover:text-secondary transition-colors`}
           >
             <FaCode className="text-lg mb-1" />
-            API
+            x402 API
           </Link>
         </div>
       </div>
