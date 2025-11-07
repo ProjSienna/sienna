@@ -20,7 +20,39 @@ const ApiPage = () => {
 
   const endpoints = [
     {
-      id: 'payment-request',
+      id: 'x402-payment',
+      title: 'x402 Payment Request',
+      description: 'Request payment requirements using the x402 standard with Solana USDC. Returns payment details including recipient wallet, token account, and amount.',
+      endpoint: '/api/payment',
+      method: 'GET',
+      curl: `curl -X GET "https://api.projectsienna.xyz/api/payment?network=mainnet&amount=5"`,
+      js: `// Using fetch API
+const requestPayment = async () => {
+  const response = await fetch('https://api.projectsienna.xyz/api/payment?network=mainnet&amount=5', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  const data = await response.json();
+  console.log(data);
+  // Returns payment requirements with status 402
+}`,
+      python: `# Using requests library
+import requests
+
+url = "https://api.projectsienna.xyz/api/payment"
+params = {
+    "network": "mainnet",
+    "amount": 5
+}
+
+response = requests.get(url, params=params)
+print(response.json())`
+    },
+    {
+      id: 'payment-request-email',
       title: 'Send Payment Request Email',
       description: 'Sends a payment request email to a recipient with a payment link.',
       endpoint: '/api/email/payment-request',
@@ -104,9 +136,9 @@ print(response.json())`
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-12">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">Sienna API Documentation</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">Sienna x402 Payment API</h1>
         <p className="text-xl text-gray-600 mb-6">
-          Integrate payment functionality in your applications with our API endpoints.
+          Blockchain-native payment API using the x402 standard with Solana USDC.
         </p>
         <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
           <div className="flex items-start">
@@ -222,7 +254,17 @@ print(response.json())`
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Response</h3>
               <pre className="bg-gray-50 p-4 rounded-md overflow-x-auto text-sm whitespace-pre-wrap break-all sm:break-normal">
-                <code className="language-json mobile-friendly-code">{`{
+                <code className="language-json mobile-friendly-code">{endpoint.id === 'x402-payment' ? `{
+  "payment": {
+    "recipientWallet": "HoMwfN4toaaMtPL7Z7mar2H2CFro8n4B2HkjuFUy6qLM",
+    "tokenAccount": "3Dd5Z9PNrzZySpCUe2LaLY3K66hdvks9oLt2sesbXhCx",
+    "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "amount": 5000000,
+    "amountUSDC": 5,
+    "cluster": "mainnet",
+    "message": "Send USDC to the token account"
+  }
+}` : `{
   "message": "Payment request email sent successfully",
   "aiContent": {
     "subject": "Friendly Reminder: Payment for Your Website Design Project 💻✨",
