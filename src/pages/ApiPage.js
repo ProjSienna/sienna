@@ -251,7 +251,7 @@ export default PremiumPaywall;`}</code>
                     <h5 className="font-semibold text-blue-900 mb-2">Props</h5>
                     <ul className="text-sm text-gray-700 space-y-1">
                       <li><code className="bg-white px-2 py-0.5 rounded">endpoint</code> - Backend API URL (e.g., https://api.projectsienna.xyz/api/payment)</li>
-                      <li><code className="bg-white px-2 py-0.5 rounded">network</code> - "devnet" or "mainnet"</li>
+                      <li><code className="bg-white px-2 py-0.5 rounded">network</code> - &quot;devnet&quot; or &quot;mainnet&quot;</li>
                       <li><code className="bg-white px-2 py-0.5 rounded">amount</code> - Payment amount in USDC</li>
                       <li><code className="bg-white px-2 py-0.5 rounded">description</code> - Payment description</li>
                       <li><code className="bg-white px-2 py-0.5 rounded">onPaymentSuccess</code> - Success callback</li>
@@ -262,7 +262,7 @@ export default PremiumPaywall;`}</code>
                   <div className="mt-4 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                     <h5 className="font-semibold text-yellow-900 mb-2">📦 NPM Package Coming Soon</h5>
                     <p className="text-sm text-gray-700 mb-2">
-                      We're working on publishing this as an npm package. For now, you can:
+                      We&apos;re working on publishing this as an npm package. For now, you can:
                     </p>
                     <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
                       <li>Copy the component from our GitHub repository</li>
