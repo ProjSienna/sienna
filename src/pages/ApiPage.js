@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaCode, FaCopy, FaCheck, FaReact, FaPython, FaTerminal, FaGlobe, FaLightbulb } from 'react-icons/fa';
+import X402PaymentWidget from '../components/X402PaymentWidget';
 
 const ApiPage = () => {
   const [copiedEndpoint, setCopiedEndpoint] = useState(null);
@@ -201,9 +202,9 @@ print(response.json())`
             className="w-full p-6 text-left hover:bg-blue-100 transition-colors flex items-center justify-between"
           >
             <div>
-              <h3 className="text-xl font-bold text-blue-900 mb-2">Client-Side Integration Example</h3>
+              <h3 className="text-xl font-bold text-blue-900 mb-2">🎨 X402 Payment Widget - React Component</h3>
               <p className="text-gray-700">
-                Click to see how to integrate x402 payments using TypeScript and Solana Web3.js
+                Ready-to-use React component for x402 payments. Click to see the code and try the live demo.
               </p>
             </div>
             <span className="text-2xl text-blue-900">{isClientExampleExpanded ? '−' : '+'}</span>
@@ -211,49 +212,92 @@ print(response.json())`
           
           {isClientExampleExpanded && (
             <div className="p-6 pt-0 border-t border-blue-200">
-              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
-                <code>{`import { Connection, PublicKey, Transaction } from '@solana/web3.js';
-import { 
-  getAssociatedTokenAddress, 
-  createAssociatedTokenAccountInstruction,
-  createTransferInstruction 
-} from '@solana/spl-token';
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left side: Code example */}
+                <div>
+                  <h4 className="text-lg font-semibold text-blue-900 mb-3">Usage Example</h4>
+                  <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                    <code>{`// For now, copy the X402PaymentWidget component from:
+// https://github.com/projectsienna/sienna-code/blob/main/sienna/src/components/X402PaymentWidget.js
 
-// 1. Request payment requirements
-const response = await fetch('https://api.projectsienna.xyz/api/payment?amount=5');
-const { payment } = await response.json();
+import X402PaymentWidget from './components/X402PaymentWidget';
 
-// 2. Create transaction
-const connection = new Connection('https://api.mainnet-beta.solana.com');
-const transaction = new Transaction();
+function PremiumPaywall() {
+  const handleSuccess = (result) => {
+    console.log('Payment successful!', result);
+    // Unlock premium content
+  };
 
-// 3. Add token transfer instruction
-const transferInstruction = createTransferInstruction(
-  await getAssociatedTokenAddress(
-    new PublicKey(payment.mint),
-    payerPublicKey
-  ),
-  new PublicKey(payment.tokenAccount),
-  payerPublicKey,
-  payment.amount
-);
-transaction.add(transferInstruction);
+  const handleError = (error) => {
+    console.error('Payment failed:', error);
+  };
 
-// 4. Sign and send transaction
-const signedTx = await wallet.signTransaction(transaction);
-const serialized = signedTx.serialize().toString('base64');
+  return (
+    <X402PaymentWidget
+      endpoint="https://api.projectsienna.xyz/api/payment"
+      network="devnet"
+      amount={0.01}
+      description="Premium content access"
+      onPaymentSuccess={handleSuccess}
+      onPaymentError={handleError}
+    />
+  );
+}
 
-// 5. Submit payment proof
-await fetch('https://api.projectsienna.xyz/api/payment', {
-  method: 'GET',
-  headers: {
-    'X-Payment': JSON.stringify({
-      network: 'solana:mainnet',
-      serializedTransaction: serialized
-    })
-  }
-});`}</code>
-              </pre>
+export default PremiumPaywall;`}</code>
+                  </pre>
+                  
+                  <div className="mt-4 bg-blue-100 p-4 rounded-lg">
+                    <h5 className="font-semibold text-blue-900 mb-2">Props</h5>
+                    <ul className="text-sm text-gray-700 space-y-1">
+                      <li><code className="bg-white px-2 py-0.5 rounded">endpoint</code> - Backend API URL (e.g., https://api.projectsienna.xyz/api/payment)</li>
+                      <li><code className="bg-white px-2 py-0.5 rounded">network</code> - "devnet" or "mainnet"</li>
+                      <li><code className="bg-white px-2 py-0.5 rounded">amount</code> - Payment amount in USDC</li>
+                      <li><code className="bg-white px-2 py-0.5 rounded">description</code> - Payment description</li>
+                      <li><code className="bg-white px-2 py-0.5 rounded">onPaymentSuccess</code> - Success callback</li>
+                      <li><code className="bg-white px-2 py-0.5 rounded">onPaymentError</code> - Error callback</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="mt-4 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <h5 className="font-semibold text-yellow-900 mb-2">📦 NPM Package Coming Soon</h5>
+                    <p className="text-sm text-gray-700 mb-2">
+                      We're working on publishing this as an npm package. For now, you can:
+                    </p>
+                    <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
+                      <li>Copy the component from our GitHub repository</li>
+                      <li>Install required dependencies: <code className="bg-white px-2 py-0.5 rounded">@solana/wallet-adapter-react @solana/web3.js @solana/spl-token</code></li>
+                      <li>Ensure your app has Solana wallet adapter context providers</li>
+                    </ol>
+                  </div>
+                </div>
+
+                {/* Right side: Live demo */}
+                <div>
+                  <h4 className="text-lg font-semibold text-blue-900 mb-3">Live Demo</h4>
+                  <div className="bg-white p-4 rounded-lg border border-blue-200">
+                    <X402PaymentWidget
+                      endpoint="https://api.projectsienna.xyz/api/payment"
+                      network="devnet"
+                      amount={0.01}
+                      description="API Demo Payment"
+                      onPaymentSuccess={(result) => {
+                        console.log('Demo payment successful:', result);
+                        alert('Payment successful! Check console for details.');
+                      }}
+                      onPaymentError={(error) => {
+                        console.error('Demo payment error:', error);
+                        alert('Payment failed: ' + error.message);
+                      }}
+                    />
+                  </div>
+                  <div className="mt-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                    <p className="text-sm text-gray-700">
+                      <strong>💡 Note:</strong> This demo uses devnet. Make sure your wallet is connected to Solana devnet and has test USDC.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

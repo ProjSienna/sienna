@@ -124,10 +124,14 @@ export const transactionsApi = {
     method: 'POST',
     body: JSON.stringify(transaction),
   }),
-  getByWallet: (walletAddress) => 
-    fetchApi(`/transactions/wallet/${walletAddress}`),
-  getBatchTransactions: (batchId) => 
-    fetchApi(`/transactions/batch/${batchId}`),
+  getBySenderWallet: (walletAddress) => 
+    fetchApi(`/transactions/sender/${walletAddress}`),
+  getByRecipientWallet: (walletAddress) => 
+    fetchApi(`/transactions/recipient/${walletAddress}`),
+  getRequestedByWallet: (walletAddress) => 
+    fetchApi(`/transactions/requested/${walletAddress}`),
+  getByPayrollId: (payrollId) => 
+    fetchApi(`/transactions/payroll/${payrollId}`),
 };
 
 /**
